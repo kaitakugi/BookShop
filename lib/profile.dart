@@ -37,7 +37,7 @@ class ProfilePage extends State<Profile> {
         if (doc.exists) {
           setState(() {
             user = UserModel(
-              name: doc['username'],
+              username: doc['username'],
               email: doc['email'],
               password: '',
             );
@@ -92,7 +92,7 @@ class ProfilePage extends State<Profile> {
                     const SizedBox(height: 10),
                     // Kiểm tra null trước khi truy cập vào user
                     Text(
-                      user?.name ??
+                      user?.username ??
                           "Tên người dùng", // Thêm giá trị mặc định nếu user là null
                       style: const TextStyle(
                           fontSize: 22, fontWeight: FontWeight.bold),

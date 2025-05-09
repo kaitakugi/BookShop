@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:study_app/admin/adminpage.dart';
 import 'package:study_app/main.dart';
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -39,14 +40,19 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       // Lưu thông tin vào Firestore
+      print("Đang ghi user vào Firestore...");
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
           .set({
-        'email': email,
         'username': username,
+        'email': email,
         'createdAt': DateTime.now(),
+        'role': 'user', // ← thêm dòng này để tránh lỗi thiếu role
       });
+
+      print("Ghi thành công!");
+
       // Sau khi đăng ký, chuyển sang form đăng nhập
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -86,15 +92,33 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
+      String uid = userCredential.user!.uid;
+
+      // Lấy thông tin người dùng từ Firestore
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (!userDoc.exists) {
+        throw Exception('Không tìm thấy thông tin người dùng trong Firestore');
+      }
+
+      String role =
+          userDoc['role'] ?? 'user'; // nếu không có role thì mặc định là user
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AdminPage()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {

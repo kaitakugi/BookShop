@@ -27,7 +27,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
   Widget build(BuildContext context) {
     final post = widget.post;
 
-    Future<void> _likePost() async {
+    Future<void> likePost() async {
       // Giả lập tăng like, bạn cần thay bằng gọi API thật
       setState(() {
         widget.post.likes += 1;
@@ -73,7 +73,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   icon: const Icon(Icons.favorite_border),
                   color: Colors.red,
                   onPressed: () async {
-                    await _likePost(); // Gửi request lên server
+                    await likePost(); // Gửi request lên server
                   },
                 ),
                 Text('${post.likes} Likes'),
