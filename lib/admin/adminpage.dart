@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:study_app/books/bookservice.dart';
+import 'package:study_app/services/bookservice.dart';
 import 'package:study_app/login_register_page.dart';
 import 'package:study_app/models/bookmodel.dart';
 
 class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+  const AdminPage({super.key});
 
   @override
   _AdminPageState createState() => _AdminPageState();
@@ -15,6 +15,7 @@ class _AdminPageState extends State<AdminPage> {
   final TextEditingController authorController = TextEditingController();
   final TextEditingController imageController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController categoryController = TextEditingController();
 
   final BookService bookService = BookService(); // Tạo instance của BookService
 
@@ -29,7 +30,7 @@ class _AdminPageState extends State<AdminPage> {
         author: authorController.text,
         description: descriptionController.text,
         image: imageController.text,
-        category: '',
+        category: categoryController.text,
       );
 
       if (docId != null && docId.isNotEmpty) {
@@ -45,12 +46,14 @@ class _AdminPageState extends State<AdminPage> {
       authorController.clear();
       imageController.clear();
       descriptionController.clear();
+      categoryController.clear();
     }
   }
 
   void showEditDialog(Book book) {
     titleController.text = book.title;
     authorController.text = book.author;
+    categoryController.text = book.category;
     imageController.text = book.image;
     descriptionController.text = book.description;
 
@@ -67,6 +70,10 @@ class _AdminPageState extends State<AdminPage> {
               TextField(
                   controller: authorController,
                   decoration: const InputDecoration(labelText: 'Author')),
+              TextField(
+                controller: categoryController,
+                decoration: const InputDecoration(labelText: 'Category'),
+              ),
               TextField(
                   controller: descriptionController,
                   decoration: const InputDecoration(labelText: 'Description')),
@@ -106,6 +113,10 @@ class _AdminPageState extends State<AdminPage> {
             TextField(
                 controller: authorController,
                 decoration: const InputDecoration(labelText: 'Author')),
+            TextField(
+              controller: categoryController,
+              decoration: const InputDecoration(labelText: 'Category'),
+            ),
             TextField(
                 controller: descriptionController,
                 decoration: const InputDecoration(labelText: 'Description')),

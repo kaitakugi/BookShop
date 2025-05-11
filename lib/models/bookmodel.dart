@@ -20,15 +20,17 @@ class Book {
   // Phương thức chuyển đổi từ Firestore document
   factory Book.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
     return Book(
       id: doc.id,
-      title: data['title'],
-      author: data['author'],
-      description: data['description'],
-      image: data['imageUrl'],
-      category: data['category'], // Lấy category từ Firestore
+      title: data['title'] ?? '',
+      author: data['author'] ?? 'Không rõ',
+      description: data['description'] ?? '',
+      image: data['imageUrl'] ?? '',
+      category: data['category'] ?? 'Không rõ',
     );
   }
+  //Hỏi chấm giúp tránh lỗi null
 
   get isFavorite => null;
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:study_app/bookdetail.dart';
-import 'package:study_app/books/bookservice.dart';
+import 'package:study_app/services/bookservice.dart';
 import 'package:study_app/home.dart';
 import 'package:study_app/models/bookmodel.dart';
-import 'package:study_app/admin/adminpage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key});
@@ -15,6 +16,48 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   int currentPageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    loadFavoriteBooks();
+  }
+
+  //hàm load dữ liệu yêu thích từ firestore
+  void loadFavoriteBooks() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('favorites')
+        .get();
+
+    setState(() {
+      favoriteBookIds = snapshot.docs.map((doc) => doc.id).toSet();
+    });
+  }
+
+  final userId = FirebaseAuth.instance.currentUser!.uid;
+
+  void toggleFavorite(Book book) async {
+    final docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('favorites')
+        .doc(book.id);
+
+    final docSnapshot = await docRef.get();
+
+    if (docSnapshot.exists) {
+      await docRef.delete(); // Bỏ yêu thích
+    } else {
+      await docRef.set({
+        'title': book.title,
+        'category': book.category,
+        'image': book.image,
+        // Thêm các trường khác nếu cần
+      });
+    }
+  }
 
   Set<String> favoriteBookIds = {}; // giả sử bạn dùng book.id
 
@@ -221,6 +264,42 @@ class _SearchState extends State<Search> {
                           },
                         ),
                         categoryItem(
+                          'Drama',
+                          'https://img.freepik.com/free-vector/theatre-masks-backdrop_98292-6042.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          () {
+                            setState(() {
+                              selectedCategory = 'Drama';
+                            });
+                          },
+                        ),
+                        categoryItem(
+                          'Fiction',
+                          'https://img.freepik.com/free-vector/realistic-fantasy-illustration-dwarf-illustration_52683-95391.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          () {
+                            setState(() {
+                              selectedCategory = 'Fiction';
+                            });
+                          },
+                        ),
+                        categoryItem(
+                          'Liternature',
+                          'https://img.freepik.com/free-vector/eco-tourism-concept_23-2148630127.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          () {
+                            setState(() {
+                              selectedCategory = 'Liternator';
+                            });
+                          },
+                        ),
+                        categoryItem(
+                          'Manga',
+                          'https://img.freepik.com/free-vector/hand-drawn-vintage-comic-illustration_23-2149624608.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          () {
+                            setState(() {
+                              selectedCategory = 'Manga';
+                            });
+                          },
+                        ),
+                        categoryItem(
                           'All',
                           'https://img.icons8.com/color/96/books.png', // icon tùy bạn chọn
                           () {
@@ -281,6 +360,7 @@ class _SearchState extends State<Search> {
                               },
                               child: Container(
                                 decoration: BoxDecoration(
+                                  // ignore: deprecated_member_use
                                   color: Colors.white.withOpacity(0.9),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -300,8 +380,9 @@ class _SearchState extends State<Search> {
                                             fit: BoxFit.cover,
                                             loadingBuilder: (context, child,
                                                 loadingProgress) {
-                                              if (loadingProgress == null)
+                                              if (loadingProgress == null) {
                                                 return child;
+                                              }
                                               return Container(
                                                 height: 150,
                                                 color: Colors.grey[200],
@@ -324,7 +405,9 @@ class _SearchState extends State<Search> {
                                           top: 8,
                                           right: 8,
                                           child: GestureDetector(
-                                            onTap: () {
+                                            onTap: () async {
+                                              toggleFavorite(
+                                                  book); // Lưu vào Firestore
                                               setState(() {
                                                 if (favoriteBookIds
                                                     .contains(book.id)) {

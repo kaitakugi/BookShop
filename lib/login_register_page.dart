@@ -111,7 +111,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => AdminPage()),
+          MaterialPageRoute(builder: (context) => const AdminPage()),
         );
       } else {
         Navigator.pushReplacement(
