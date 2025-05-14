@@ -19,6 +19,8 @@ class _AdminPageState extends State<AdminPage> {
 
   final BookService bookService = BookService(); // Tạo instance của BookService
 
+  bool isLocked = false;
+
   void addOrUpdateBook({String? docId}) async {
     if (titleController.text.isNotEmpty &&
         authorController.text.isNotEmpty &&
@@ -31,6 +33,7 @@ class _AdminPageState extends State<AdminPage> {
         description: descriptionController.text,
         image: imageController.text,
         category: categoryController.text,
+        lock: isLocked,
       );
 
       if (docId != null && docId.isNotEmpty) {
@@ -47,6 +50,8 @@ class _AdminPageState extends State<AdminPage> {
       imageController.clear();
       descriptionController.clear();
       categoryController.clear();
+      isLocked = false;
+      setState(() {});
     }
   }
 
@@ -56,6 +61,7 @@ class _AdminPageState extends State<AdminPage> {
     categoryController.text = book.category;
     imageController.text = book.image;
     descriptionController.text = book.description;
+    isLocked = book.lock; // 👈 load trạng thái khoá của sách cần sửa
 
     showDialog(
       context: context,
@@ -80,6 +86,15 @@ class _AdminPageState extends State<AdminPage> {
               TextField(
                   controller: imageController,
                   decoration: const InputDecoration(labelText: 'Image URL')),
+              SwitchListTile(
+                title: const Text('Khóa sách (yêu cầu xu)'),
+                value: isLocked,
+                onChanged: (value) {
+                  setState(() {
+                    isLocked = value;
+                  });
+                },
+              ),
             ],
           ),
         ),
@@ -123,6 +138,15 @@ class _AdminPageState extends State<AdminPage> {
             TextField(
                 controller: imageController,
                 decoration: const InputDecoration(labelText: 'Image URL')),
+            SwitchListTile(
+              title: const Text('Khóa sách (yêu cầu xu)'),
+              value: isLocked,
+              onChanged: (value) {
+                setState(() {
+                  isLocked = value;
+                });
+              },
+            ),
             ElevatedButton(
                 onPressed: () => addOrUpdateBook(), // Thêm sách mới
                 child: const Text('Add Book')),

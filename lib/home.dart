@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:study_app/listhome/attendance_page.dart';
+import 'package:study_app/listhome/buybook_page.dart';
 import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/search.dart';
 // ignore: depend_on_referenced_packages
@@ -146,18 +148,16 @@ class _HomeState extends State<Home> {
                 Row(
                   children: [
                     ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                      ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AttendancePage()),
+                        ).then((_) =>
+                            fetchUserData()); // reload lại coin sau khi điểm danh
+                      },
                       icon: const Icon(Icons.add_circle, color: Colors.amber),
-                      label: const Text("28"),
+                      label: Text('${user?.coins ?? 0}'),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
@@ -190,7 +190,7 @@ class _HomeState extends State<Home> {
               text: TextSpan(
                 style: const TextStyle(fontSize: 24, color: Colors.black),
                 children: [
-                  const TextSpan(text: 'Welcome back, '),
+                  const TextSpan(text: 'Welcome back '),
                   TextSpan(
                     text: user?.username ?? 'Tên người dùng',
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -249,7 +249,16 @@ class _HomeState extends State<Home> {
                         )
                       ],
                     ),
-                    const Icon(Icons.more_horiz, size: 24)
+                    IconButton(
+                      icon: const Icon(Icons.more_horiz, size: 24),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => BuyBookPage()),
+                        ).then((_) =>
+                            fetchUserData()); // để cập nhật xu nếu người dùng mua sách
+                      },
+                    ),
                   ],
                 ),
                 const Divider(height: 20, thickness: 2, color: Colors.black),

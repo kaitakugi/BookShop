@@ -78,18 +78,11 @@ class _PostDetailPageState extends State<PostDetailPage> {
       await FirebaseFirestore.instance
           .collection('forum')
           .doc(widget.post.id)
-          .update({
-        'comments': FieldValue.arrayUnion([
-          {
-            'username': username,
-            'content': text,
-            'timestamp': FieldValue.serverTimestamp(),
-          }
-        ]),
-      });
-
-      setState(() {
-        widget.post.comments.add(newComment);
+          .collection('comments')
+          .add({
+        'username': username,
+        'content': text,
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
       _commentController.clear();
@@ -146,40 +139,30 @@ class _PostDetailPageState extends State<PostDetailPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             Expanded(
-              child: StreamBuilder<DocumentSnapshot>(
+              child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('forum')
                     .doc(post.id)
+                    .collection('comments')
+                    .orderBy('timestamp', descending: true)
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData)
+                  if (!snapshot.hasData) {
                     return const CircularProgressIndicator();
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
-                  final List<dynamic> comments = data['comments'] ?? [];
+                  }
 
-                  comments.sort((a, b) {
-                    final aTime = a['timestamp']?.toDate() ?? DateTime.now();
-                    final bTime = b['timestamp']?.toDate() ?? DateTime.now();
-                    return bTime.compareTo(aTime);
-                  });
+                  final comments = snapshot.data!.docs;
 
                   return ListView.builder(
                     itemCount: comments.length,
                     itemBuilder: (context, index) {
-                      final comment = comments[index];
-                      if (comment is Map<String, dynamic>) {
-                        return ListTile(
-                          leading: const Icon(Icons.comment),
-                          title: Text(comment['username'] ?? 'Ẩn danh'),
-                          subtitle: Text(comment['content'] ?? ''),
-                        );
-                      } else {
-                        return ListTile(
-                          leading: const Icon(Icons.warning),
-                          title: Text('Comment lỗi định dạng'),
-                          subtitle: Text(comment.toString()),
-                        );
-                      }
+                      final comment =
+                          comments[index].data() as Map<String, dynamic>;
+                      return ListTile(
+                        leading: const Icon(Icons.comment),
+                        title: Text(comment['username'] ?? 'Ẩn danh'),
+                        subtitle: Text(comment['content'] ?? ''),
+                      );
                     },
                   );
                 },

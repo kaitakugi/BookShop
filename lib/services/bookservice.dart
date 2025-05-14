@@ -31,4 +31,18 @@ class BookService {
     final snapshot = await booksCollection.get();
     return snapshot.docs.map((doc) => Book.fromFirestore(doc)).toList();
   }
+
+  // Lấy sách miễn phí (lock = false hoặc không có field lock)
+  Stream<List<Book>> getFreeBooks() {
+    return booksCollection.where('lock', isEqualTo: false).snapshots().map(
+        (snapshot) =>
+            snapshot.docs.map((doc) => Book.fromFirestore(doc)).toList());
+  }
+
+  // Lấy sách mất xu (lock = true)
+  Stream<List<Book>> getLockedBooks() {
+    return booksCollection.where('lock', isEqualTo: true).snapshots().map(
+        (snapshot) =>
+            snapshot.docs.map((doc) => Book.fromFirestore(doc)).toList());
+  }
 }

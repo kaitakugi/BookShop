@@ -6,7 +6,8 @@ class Book {
   String author;
   String description;
   String image;
-  String category; // Thêm trường category vào đây
+  String category;
+  bool lock; // 🔒 true nếu sách cần xu, false nếu miễn phí
 
   Book({
     required this.id,
@@ -14,10 +15,10 @@ class Book {
     required this.author,
     required this.description,
     required this.image,
-    required this.category, // Khởi tạo category trong constructor
+    required this.category,
+    this.lock = false, // Mặc định là sách miễn phí
   });
 
-  // Phương thức chuyển đổi từ Firestore document
   factory Book.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
@@ -28,20 +29,20 @@ class Book {
       description: data['description'] ?? '',
       image: data['imageUrl'] ?? '',
       category: data['category'] ?? 'Không rõ',
+      lock: data['lock'] ?? false, // Đọc field lock, mặc định là false
     );
   }
-  //Hỏi chấm giúp tránh lỗi null
 
   get isFavorite => null;
 
-  // Phương thức chuyển đổi Book thành Map để lưu vào Firestore
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'author': author,
       'description': description,
       'imageUrl': image,
-      'category': category, // Lưu category vào Firestore
+      'category': category,
+      'lock': lock, // Lưu vào Firestore
     };
   }
 }

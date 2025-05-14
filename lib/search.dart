@@ -314,7 +314,7 @@ class _SearchState extends State<Search> {
                   // Book Grid
                   Expanded(
                     child: StreamBuilder<List<Book>>(
-                      stream: BookService().getBooks(),
+                      stream: BookService().getFreeBooks(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
