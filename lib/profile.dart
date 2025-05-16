@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study_app/infopage.dart';
+import 'package:study_app/storagefavour/storagefavour.dart';
 import 'login_register_page.dart';
 import 'models/usermodel.dart';
 // ignore: depend_on_referenced_packages
@@ -37,7 +38,7 @@ class ProfilePage extends State<Profile> {
         if (doc.exists) {
           setState(() {
             user = UserModel(
-              name: doc['username'],
+              username: doc['username'],
               email: doc['email'],
               password: '',
             );
@@ -92,7 +93,7 @@ class ProfilePage extends State<Profile> {
                     const SizedBox(height: 10),
                     // Kiểm tra null trước khi truy cập vào user
                     Text(
-                      user?.name ??
+                      user?.username ??
                           "Tên người dùng", // Thêm giá trị mặc định nếu user là null
                       style: const TextStyle(
                           fontSize: 22, fontWeight: FontWeight.bold),
@@ -118,7 +119,13 @@ class ProfilePage extends State<Profile> {
                       }
                     }),
                     _buildProfileItem(Icons.history, "Lịch sử hoạt động"),
-                    _buildProfileItem(Icons.bookmark, "Mục đã lưu"),
+                    _buildProfileItem(Icons.bookmark, "Mục đã lưu", () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const StorageFavour()),
+                      );
+                    }),
                     _buildProfileItem(Icons.settings, "Cài đặt"),
                     _buildProfileItem(Icons.help_outline, "Trợ giúp & Hỗ trợ"),
                     const SizedBox(height: 30),

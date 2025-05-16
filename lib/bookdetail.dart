@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:study_app/search.dart';
+import 'package:study_app/models/bookmodel.dart';
 
 class BookDetailPage extends StatelessWidget {
   final Book book;
 
-  BookDetailPage({required this.book});
+  const BookDetailPage({super.key, required this.book});
 
   @override
   Widget build(BuildContext context) {
@@ -20,48 +20,62 @@ class BookDetailPage extends StatelessWidget {
           children: [
             // Image
             Image.network(
-              book.imageUrl,
+              book.image, // 🔁 sửa từ book.imageUrl => book.image
               height: 200,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Title
             Text(
               book.title,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
+
+            // Author
+            Text(
+              'Author: ${book.author}',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+
+            // Description
+            Text(
+              book.description,
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
 
             // Rating
             RatingBar.builder(
               initialRating: 4,
               minRating: 1,
               itemSize: 30,
-              itemBuilder: (context, index) => Icon(
+              itemBuilder: (context, _) => const Icon(
                 Icons.star,
                 color: Colors.amber,
               ),
               onRatingUpdate: (rating) {
-                print(rating);
+                print("Rating: $rating");
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Chapters
-            Text(
+            const Text(
               'Chapters',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             ListView.builder(
               shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: 10, // giả sử có 10 chương
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text('Chapter ${index + 1}'),
                   onTap: () {
-                    // Navigate to chapter page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -72,20 +86,21 @@ class BookDetailPage extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Comments Section
-            Text(
+            const Text(
               'Comments',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             ListView.builder(
               shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: 3, // giả sử có 3 bình luận
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text('User ${index + 1}'),
-                  subtitle: Text('This is a comment about the book.'),
+                  subtitle: const Text('This is a comment about the book.'),
                 );
               },
             ),
@@ -99,7 +114,7 @@ class BookDetailPage extends StatelessWidget {
 class ChapterPage extends StatelessWidget {
   final int chapterIndex;
 
-  ChapterPage({required this.chapterIndex});
+  const ChapterPage({super.key, required this.chapterIndex});
 
   @override
   Widget build(BuildContext context) {

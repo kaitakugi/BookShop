@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:study_app/forum.dart';
 import 'package:study_app/home.dart';
 import 'package:study_app/login_register_page.dart';
-import 'package:study_app/mybook.dart';
+import 'package:study_app/myboook/mybook.dart';
 import 'package:study_app/search.dart';
 import 'package:study_app/profile.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -84,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           NavigationDestination(
             icon: Icon(Icons.quiz),
-            label: 'Quiz',
+            label: 'Forum',
           ),
           NavigationDestination(
             icon: Icon(Icons.person),
