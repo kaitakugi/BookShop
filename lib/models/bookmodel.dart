@@ -7,7 +7,8 @@ class Book {
   String description;
   String image;
   String category;
-  bool lock; // 🔒 true nếu sách cần xu, false nếu miễn phí
+  bool lock;
+  int price; // 🔒 true nếu sách cần xu, false nếu miễn phí
 
   Book({
     required this.id,
@@ -16,7 +17,8 @@ class Book {
     required this.description,
     required this.image,
     required this.category,
-    this.lock = false, // Mặc định là sách miễn phí
+    this.lock = false,
+    required this.price, // Mặc định là sách miễn phí
   });
 
   factory Book.fromFirestore(DocumentSnapshot doc) {
@@ -29,7 +31,8 @@ class Book {
       description: data['description'] ?? '',
       image: data['imageUrl'] ?? '',
       category: data['category'] ?? 'Không rõ',
-      lock: data['lock'] ?? false, // Đọc field lock, mặc định là false
+      lock: data['lock'] ?? false,
+      price: data['price'] ?? 0, // Đọc field lock, mặc định là false
     );
   }
 
@@ -42,7 +45,8 @@ class Book {
       'description': description,
       'imageUrl': image,
       'category': category,
-      'lock': lock, // Lưu vào Firestore
+      'lock': lock,
+      'price': price // Lưu vào Firestore
     };
   }
 }

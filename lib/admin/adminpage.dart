@@ -1,220 +1,146 @@
 import 'package:flutter/material.dart';
-import 'package:study_app/services/bookservice.dart';
+import 'package:study_app/admin/bookmanage.dart';
+import 'package:study_app/admin/firebasebk.dart';
+import 'package:study_app/admin/forumanage.dart';
+import 'package:study_app/admin/nhap2.dart';
+import 'package:study_app/admin/pendingbook.dart';
 import 'package:study_app/login_register_page.dart';
-import 'package:study_app/models/bookmodel.dart';
+// bạn cần import trang login/register
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
 
   @override
-  _AdminPageState createState() => _AdminPageState();
+  State<AdminPage> createState() => _AdminPageState();
 }
 
 class _AdminPageState extends State<AdminPage> {
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController authorController = TextEditingController();
-  final TextEditingController imageController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController categoryController = TextEditingController();
+  final List<String> titles = [
+    "Manage Books",
+    "Manage Forum",
+    "Firebase Guide",
+    "Pending Books",
+    "Advanced Widgets"
+  ];
 
-  final BookService bookService = BookService(); // Tạo instance của BookService
+  final List<Color> colors = [
+    Colors.redAccent,
+    Colors.greenAccent,
+    Colors.blueAccent,
+    Colors.orangeAccent,
+    Colors.purpleAccent
+  ];
 
-  bool isLocked = false;
-
-  void addOrUpdateBook({String? docId}) async {
-    if (titleController.text.isNotEmpty &&
-        authorController.text.isNotEmpty &&
-        imageController.text.isNotEmpty &&
-        descriptionController.text.isNotEmpty) {
-      final newBook = Book(
-        id: docId ?? '',
-        title: titleController.text,
-        author: authorController.text,
-        description: descriptionController.text,
-        image: imageController.text,
-        category: categoryController.text,
-        lock: isLocked,
-      );
-
-      if (docId != null && docId.isNotEmpty) {
-        // Cập nhật sách
-        await bookService.updateBook(newBook);
-      } else {
-        // Thêm sách mới
-        await bookService.addBook(newBook);
-      }
-
-      // Xóa dữ liệu trong các TextField sau khi thêm/sửa
-      titleController.clear();
-      authorController.clear();
-      imageController.clear();
-      descriptionController.clear();
-      categoryController.clear();
-      isLocked = false;
-      setState(() {});
-    }
-  }
-
-  void showEditDialog(Book book) {
-    titleController.text = book.title;
-    authorController.text = book.author;
-    categoryController.text = book.category;
-    imageController.text = book.image;
-    descriptionController.text = book.description;
-    isLocked = book.lock; // 👈 load trạng thái khoá của sách cần sửa
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Edit Book'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(labelText: 'Book Title')),
-              TextField(
-                  controller: authorController,
-                  decoration: const InputDecoration(labelText: 'Author')),
-              TextField(
-                controller: categoryController,
-                decoration: const InputDecoration(labelText: 'Category'),
-              ),
-              TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description')),
-              TextField(
-                  controller: imageController,
-                  decoration: const InputDecoration(labelText: 'Image URL')),
-              SwitchListTile(
-                title: const Text('Khóa sách (yêu cầu xu)'),
-                value: isLocked,
-                onChanged: (value) {
-                  setState(() {
-                    isLocked = value;
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              addOrUpdateBook(docId: book.id); // Cập nhật hoặc thêm sách
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
+  int? hoveredIndex;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin - Manage Books')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Book Title')),
-            TextField(
-                controller: authorController,
-                decoration: const InputDecoration(labelText: 'Author')),
-            TextField(
-              controller: categoryController,
-              decoration: const InputDecoration(labelText: 'Category'),
+      appBar: AppBar(
+        title: const Text("Admin Book Shelf"),
+        actions: [
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LoginRegisterPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.logout),
+            label: const Text('Đăng Xuất'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description')),
-            TextField(
-                controller: imageController,
-                decoration: const InputDecoration(labelText: 'Image URL')),
-            SwitchListTile(
-              title: const Text('Khóa sách (yêu cầu xu)'),
-              value: isLocked,
-              onChanged: (value) {
-                setState(() {
-                  isLocked = value;
-                });
-              },
-            ),
-            ElevatedButton(
-                onPressed: () => addOrUpdateBook(), // Thêm sách mới
-                child: const Text('Add Book')),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginRegisterPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.logout),
-              label: const Text('Đăng Xuất'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-              ),
-            ),
-            Expanded(
-              child: StreamBuilder<List<Book>>(
-                stream:
-                    bookService.getBooks(), // Lấy danh sách sách từ Firestore
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(titles.length, (index) {
+              return GestureDetector(
+                onTap: () {
+                  Widget targetPage;
+
+                  switch (index) {
+                    case 0:
+                      targetPage =
+                          const BookManagePage(bookIndex: 0, title: "Unknown");
+                      break;
+                    case 1:
+                      targetPage = const ForumManagePage();
+                      break;
+                    case 2:
+                      targetPage = const FirebaseBookPage();
+                      break;
+                    case 3:
+                      targetPage = const AdminPendingBooksPage();
+                      break;
+                    case 4:
+                      targetPage = const AdvancedWidgetsPage();
+                      break;
+                    default:
+                      targetPage =
+                          const BookManagePage(bookIndex: 0, title: "Unknown");
                   }
 
-                  final books = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: books.length,
-                    itemBuilder: (context, index) {
-                      final book = books[index];
-                      return ListTile(
-                        leading: Image.network(
-                          book.image,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.error),
-                        ),
-                        title: Text(book.title),
-                        subtitle: Text(book.author),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => showEditDialog(book)),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () async {
-                                await bookService
-                                    .deleteBook(book.id); // Xoá sách
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => targetPage),
                   );
                 },
-              ),
-            ),
-          ],
+                onTapDown: (_) {
+                  setState(() => hoveredIndex = index);
+                },
+                onTapUp: (_) {
+                  setState(() => hoveredIndex = null);
+                },
+                onTapCancel: () {
+                  setState(() => hoveredIndex = null);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.all(8),
+                  width: 120,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: colors[index],
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        offset: Offset(0, hoveredIndex == index ? -4 : 2),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        titles[index],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Icon(Icons.menu_book,
+                          color: Colors.white, size: 32),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );

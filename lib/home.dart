@@ -19,6 +19,10 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int currentPageIndex = 0;
 
+  //cập nhật 2 thông số để xác định sách đã mở và tổng số sách trong book vipvip
+  int unlockedCount = 0;
+  int totalCount = 0;
+
   UserModel? user;
   bool isLoading = true;
 
@@ -33,30 +37,48 @@ class _HomeState extends State<Home> {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
 
-      if (currentUser != null) {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .get();
-
-        if (doc.exists) {
-          setState(() {
-            user = UserModel(
-              username: doc['username'],
-              email: doc['email'],
-              password: '',
-            );
-            isLoading = false;
-          });
-        } else {
+      if (currentUser == null) {
+        if (mounted) {
           setState(() {
             user = null;
             isLoading = false;
           });
         }
-      } else {
+        return;
+      }
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      // Lấy danh sách ID sách đã mở khóa
+      final unlockedSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .collection('unlockedBooks')
+          .get();
+
+      // Lấy tất cả sách cần xu để mở
+      final lockedBooksSnap = await FirebaseFirestore.instance
+          .collection('books')
+          .where('lock', isEqualTo: true)
+          .where('price', isGreaterThan: 0)
+          .get();
+
+      // Lọc sách đã mở khóa trong danh sách cần xu
+      final unlockedBookIds = unlockedSnap.docs.map((doc) => doc.id).toSet();
+      final unlockedLockedBooks = lockedBooksSnap.docs
+          .where((doc) => unlockedBookIds.contains(doc.id))
+          .toList();
+
+      if (mounted) {
         setState(() {
-          user = null;
+          user = userDoc.exists
+              ? UserModel.fromMap(userDoc.data() as Map<String, dynamic>)
+              : null;
+          unlockedCount = unlockedLockedBooks.length;
+          totalCount = lockedBooksSnap.size;
           isLoading = false;
         });
       }
@@ -239,12 +261,15 @@ class _HomeState extends State<Home> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('10 of 120',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text('Day challenge'),
+                            Text(
+                              '$unlockedCount of $totalCount',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const Text('Bookshop VIP'),
                           ],
                         )
                       ],
