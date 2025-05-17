@@ -259,7 +259,7 @@ class _PostCardState extends State<PostCard> {
                   children: [
                     IconButton(
                       icon: Icon(
-                        likedUsers.contains(
+                        widget.post.likedUsers.contains(
                                 FirebaseAuth.instance.currentUser?.uid)
                             ? Icons.favorite
                             : Icons.favorite_border,
@@ -267,7 +267,7 @@ class _PostCardState extends State<PostCard> {
                       onPressed: _likePost,
                       color: Colors.red,
                     ),
-                    Text('${likedUsers.length} Likes'),
+                    Text('${widget.post.likedUsers.length} Likes')
                   ],
                 ),
                 TextButton.icon(

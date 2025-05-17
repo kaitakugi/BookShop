@@ -22,7 +22,7 @@ class _AdminPendingBooksPageState extends State<AdminPendingBooksPage> {
       'author': data['author'],
       'category': data['category'],
       'description': data['description'],
-      'image': data['image'],
+      'imageUrl': data['image'],
       'approvedAt': FieldValue.serverTimestamp(),
       // Khai báo đây là sách miễn phí (không khóa)
       'lock': false,

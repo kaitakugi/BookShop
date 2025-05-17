@@ -53,7 +53,8 @@ class _SearchState extends State<Search> {
       await docRef.set({
         'title': book.title,
         'category': book.category,
-        'image': book.image,
+        'imageUrl': book.image,
+        'author': book.author,
         // Thêm các trường khác nếu cần
       });
     }

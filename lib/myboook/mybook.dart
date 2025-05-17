@@ -189,10 +189,7 @@ class _MyBookState extends State<MyBook> {
                                             .doc(book.id)
                                             .delete();
 
-                                        setState(() {
-                                          books.removeAt(index);
-                                          isExpanded.removeAt(index);
-                                        });
+                                        await fetchUserBooks();
 
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(

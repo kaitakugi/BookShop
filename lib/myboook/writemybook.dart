@@ -55,7 +55,7 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
         'author': authorController.text.trim(),
         'category': categoryController.text.trim(),
         'description': descriptionController.text.trim(),
-        'image': imageController.text.trim(),
+        'imageUrl': imageController.text.trim(),
       };
 
       if (widget.bookId != null) {
