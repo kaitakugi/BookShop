@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study_app/admin/bookmanage.dart';
-import 'package:study_app/admin/firebasebk.dart';
+import 'package:study_app/admin/usermanage.dart';
 import 'package:study_app/admin/forumanage.dart';
 import 'package:study_app/admin/nhap2.dart';
 import 'package:study_app/admin/pendingbook.dart';
@@ -20,7 +20,7 @@ class _AdminPageState extends State<AdminPage> {
     "Manage Forum",
     "Firebase Guide",
     "Pending Books",
-    "Advanced Widgets"
+    "Manage Users"
   ];
 
   final List<Color> colors = [
@@ -73,7 +73,7 @@ class _AdminPageState extends State<AdminPage> {
                           const BookManagePage(bookIndex: 0, title: "Unknown");
                       break;
                     case 1:
-                      targetPage = const ForumManagePage();
+                      targetPage = const AdminForumPage();
                       break;
                     case 2:
                       targetPage = const FirebaseBookPage();
@@ -82,7 +82,7 @@ class _AdminPageState extends State<AdminPage> {
                       targetPage = const AdminPendingBooksPage();
                       break;
                     case 4:
-                      targetPage = const AdvancedWidgetsPage();
+                      targetPage = const UserManage();
                       break;
                     default:
                       targetPage =

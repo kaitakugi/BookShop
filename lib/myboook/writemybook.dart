@@ -3,7 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WriteMyBookPage extends StatefulWidget {
-  const WriteMyBookPage({super.key});
+  final String? bookId;
+  final Map<String, dynamic>? initialData;
+
+  const WriteMyBookPage({super.key, this.bookId, this.initialData});
 
   @override
   State<WriteMyBookPage> createState() => _UserWriteBookPageState();
@@ -47,27 +50,32 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
           .doc(user.uid)
           .collection('books');
 
-      await booksRef.add({
+      final bookData = {
         'title': titleController.text.trim(),
         'author': authorController.text.trim(),
         'category': categoryController.text.trim(),
         'description': descriptionController.text.trim(),
         'image': imageController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      };
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gửi sách thành công!')),
-      );
+      if (widget.bookId != null) {
+        // Sửa sách
+        await booksRef.doc(widget.bookId).update(bookData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cập nhật sách thành công!')),
+        );
+      } else {
+        // Gửi sách mới
+        await booksRef.add({
+          ...bookData,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gửi sách thành công!')),
+        );
+      }
 
-      // Xóa dữ liệu form
-      titleController.clear();
-      authorController.clear();
-      categoryController.clear();
-      descriptionController.clear();
-      imageController.clear();
-
-      if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi gửi sách: $e')),
@@ -78,6 +86,18 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialData != null) {
+      titleController.text = widget.initialData!['title'] ?? '';
+      authorController.text = widget.initialData!['author'] ?? '';
+      categoryController.text = widget.initialData!['category'] ?? '';
+      descriptionController.text = widget.initialData!['description'] ?? '';
+      imageController.text = widget.initialData!['image'] ?? '';
     }
   }
 
@@ -94,7 +114,9 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gửi sách của bạn')),
+      appBar: AppBar(
+        title: Text(widget.bookId != null ? 'Sửa sách' : 'Gửi sách của bạn'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -235,6 +235,7 @@ class _HomeState extends State<Home> {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
+                  // ignore: deprecated_member_use
                   color: Colors.black.withOpacity(0.05),
                   spreadRadius: 2,
                   blurRadius: 10,
@@ -352,18 +353,107 @@ class _HomeState extends State<Home> {
         ),
 
         // Book Category Title
+        // Thay thế phần Book Category Title và thêm ScrollView
         Positioned(
           top: 540,
           width: width,
-          child: const Padding(
-            padding: EdgeInsets.only(left: 20),
-            child: Text(
-              'Book category',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              height: 300, // hoặc dùng MediaQuery nếu muốn responsive
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Thông tin ứng dụng',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildInfoItem(
+                            icon: Icons.info,
+                            title: 'Về chúng tôi',
+                            content:
+                                'Ứng dụng đọc sách giúp bạn đọc hàng ngàn đầu sách mọi lúc, mọi nơi.',
+                          ),
+                          _buildInfoItem(
+                            icon: Icons.contact_mail,
+                            title: 'Liên hệ',
+                            content:
+                                'Email: contact@appdocsach.com\nHotline: 0123 456 789',
+                          ),
+                          _buildInfoItem(
+                            icon: Icons.feedback,
+                            title: 'Phản hồi',
+                            content:
+                                'Gửi phản hồi để chúng tôi cải thiện chất lượng dịch vụ.',
+                          ),
+                          _buildInfoItem(
+                            icon: Icons.star,
+                            title: 'Đánh giá',
+                            content:
+                                'Đánh giá 5 sao để ủng hộ đội ngũ phát triển ứng dụng.',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 28, color: Colors.blueAccent),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  content,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

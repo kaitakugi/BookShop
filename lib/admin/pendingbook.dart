@@ -40,33 +40,13 @@ class _AdminPendingBooksPageState extends State<AdminPendingBooksPage> {
     );
   }
 
-  void _confirmApprove(DocumentSnapshot doc) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận duyệt'),
-        content: const Text('Bạn có chắc muốn duyệt truyện này?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              approveBook(doc);
-            },
-            child: const Text('Duyệt'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Yêu cầu duyệt truyện')),
+      appBar: AppBar(
+        title: const Text('Yêu cầu duyệt truyện'),
+        backgroundColor: Colors.orangeAccent,
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('pending_books')

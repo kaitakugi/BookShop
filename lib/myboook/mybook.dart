@@ -128,9 +128,9 @@ class _MyBookState extends State<MyBook> {
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16.0, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
                                 children: [
                                   ElevatedButton(
                                     onPressed: () => requestToPublish(book),
@@ -149,9 +149,95 @@ class _MyBookState extends State<MyBook> {
                                     },
                                     child: const Text('Xem chi tiết'),
                                   ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      final shouldDelete =
+                                          await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Xác nhận xóa'),
+                                          content: const Text(
+                                              'Bạn có chắc chắn muốn xóa sách này không?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(false),
+                                              child: const Text('Hủy'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                              child: const Text('Xóa'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      if (shouldDelete != true) return;
+
+                                      final user =
+                                          FirebaseAuth.instance.currentUser;
+                                      if (user == null) return;
+
+                                      try {
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(user.uid)
+                                            .collection('books')
+                                            .doc(book.id)
+                                            .delete();
+
+                                        setState(() {
+                                          books.removeAt(index);
+                                          isExpanded.removeAt(index);
+                                        });
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content:
+                                                  Text('Xóa sách thành công')),
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content:
+                                                  Text('Lỗi khi xóa sách: $e')),
+                                        );
+                                      }
+                                    },
+                                    child: const Text('Xóa sách'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => WriteMyBookPage(
+                                            bookId: book.id,
+                                            initialData: {
+                                              'title': book.title,
+                                              'author': book.author,
+                                              'category': book.category,
+                                              'description': book.description,
+                                              'image': book.image,
+                                            },
+                                          ),
+                                        ),
+                                      );
+
+                                      if (result == true) {
+                                        fetchUserBooks(); // Làm mới danh sách sau khi chỉnh sửa
+                                      }
+                                    },
+                                    child: const Text('Sửa sách'),
+                                  ),
                                 ],
                               ),
-                            )
+                            ),
                         ],
                       ),
                     );

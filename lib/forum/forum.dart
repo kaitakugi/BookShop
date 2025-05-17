@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:study_app/models/usermodel.dart';
-import 'package:study_app/postdetail.dart';
+import 'package:study_app/forum/postdetail.dart';
 import 'package:study_app/writestory.dart';
 
 class Forum extends StatefulWidget {
@@ -55,7 +55,8 @@ class _ForumState extends State<Forum> {
   void _addPost() async {
     if (_postController.text.isNotEmpty && user != null) {
       final newPost = {
-        'name': user!.username, // Lấy tên từ người dùng đăng nhập
+        'name': user!.username,
+        'userId': FirebaseAuth.instance.currentUser!.uid, // 👈 Thêm dòng này
         'profilePic': 'https://www.example.com/profile-pic.jpg',
         'status': _postController.text,
         'comments': [],
@@ -120,6 +121,7 @@ class _ForumState extends State<Forum> {
                     final data = doc.data() as Map<String, dynamic>;
                     return Post(
                       id: doc.id,
+                      userId: data['userId'] ?? '', // 👈 Thêm dòng này
                       name: data['name'] ?? '',
                       profilePic: data['profilePic'] ?? '',
                       status: data['status'] ?? '',
@@ -150,6 +152,7 @@ class _ForumState extends State<Forum> {
 
 class Post {
   final String id;
+  final String userId; // 👈 dùng gọi lại userID để đối chiếu với người tạo post
   final String name;
   final String profilePic;
   final String status;
@@ -158,6 +161,7 @@ class Post {
 
   Post({
     required this.id,
+    required this.userId, // 👈 Thêm dòng này
     required this.name,
     required this.profilePic,
     required this.status,
@@ -179,6 +183,7 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   late List<String> likedUsers;
+  final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
@@ -270,6 +275,43 @@ class _PostCardState extends State<PostCard> {
                   icon: const Icon(Icons.comment_outlined),
                   label: const Text('Comment'),
                 ),
+
+                //button xóa chỉ khi người tạo post mới hiển thị
+                if (currentUser?.uid == post.userId)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Xác nhận'),
+                          content: const Text(
+                              'Bạn có chắc muốn xóa bài viết này không?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Hủy'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Xóa'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        await FirebaseFirestore.instance
+                            .collection('forum')
+                            .doc(post.id)
+                            .delete();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Đã xóa bài viết.')),
+                        );
+                      }
+                    },
+                  ),
               ],
             ),
           ],

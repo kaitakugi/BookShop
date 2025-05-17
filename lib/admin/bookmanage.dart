@@ -133,7 +133,10 @@ class _BookManagePage extends State<BookManagePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin - Manage Books')),
+      appBar: AppBar(
+        title: const Text('Admin - Manage Books'),
+        backgroundColor: Colors.redAccent,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:study_app/forum.dart';
+import 'package:study_app/forum/forum.dart';
 import 'package:study_app/home.dart';
 import 'package:study_app/login_register_page.dart';
 import 'package:study_app/myboook/mybook.dart';
