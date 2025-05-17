@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study_app/infopage.dart';
 import 'package:study_app/storagefavour/storagefavour.dart';
+import 'package:study_app/wallet/mywallet.dart';
 import 'login_register_page.dart';
 import 'models/usermodel.dart';
 // ignore: depend_on_referenced_packages
@@ -118,7 +119,13 @@ class ProfilePage extends State<Profile> {
                         });
                       }
                     }),
-                    _buildProfileItem(Icons.history, "Lịch sử hoạt động"),
+                    _buildProfileItem(
+                        Icons.account_balance_wallet, "Ví của tôi", () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const WalletScreen()),
+                      );
+                    }),
                     _buildProfileItem(Icons.bookmark, "Mục đã lưu", () async {
                       final result = await Navigator.push(
                         context,

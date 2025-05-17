@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:study_app/admin/bookmanage.dart';
 import 'package:study_app/admin/usermanage.dart';
 import 'package:study_app/admin/forumanage.dart';
-import 'package:study_app/admin/nhap2.dart';
+import 'package:study_app/admin/approvedmoney.dart';
 import 'package:study_app/admin/pendingbook.dart';
 import 'package:study_app/login_register_page.dart';
 // bạn cần import trang login/register
@@ -18,7 +18,7 @@ class _AdminPageState extends State<AdminPage> {
   final List<String> titles = [
     "Manage Books",
     "Manage Forum",
-    "Firebase Guide",
+    "approve money transfer",
     "Pending Books",
     "Manage Users"
   ];
@@ -76,7 +76,7 @@ class _AdminPageState extends State<AdminPage> {
                       targetPage = const AdminForumPage();
                       break;
                     case 2:
-                      targetPage = const FirebaseBookPage();
+                      targetPage = const AdminTopUpApprovalScreen();
                       break;
                     case 3:
                       targetPage = const AdminPendingBooksPage();

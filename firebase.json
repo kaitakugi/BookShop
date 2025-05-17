@@ -1,1 +1,39 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"bookshop-2b06c","appId":"1:1038745924617:android:a1a38090a007fc8746f4d8","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"bookshop-2b06c","configurations":{"android":"1:1038745924617:android:a1a38090a007fc8746f4d8","ios":"1:1038745924617:ios:4d28d01cab5532a846f4d8","macos":"1:1038745924617:ios:4d28d01cab5532a846f4d8","web":"1:1038745924617:web:47460c52ecc578f046f4d8","windows":"1:1038745924617:web:5598bc2531d4885b46f4d8"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bookshop-2b06c",
+          "appId": "1:1038745924617:android:a1a38090a007fc8746f4d8",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "bookshop-2b06c",
+          "configurations": {
+            "android": "1:1038745924617:android:a1a38090a007fc8746f4d8",
+            "ios": "1:1038745924617:ios:4d28d01cab5532a846f4d8",
+            "macos": "1:1038745924617:ios:4d28d01cab5532a846f4d8",
+            "web": "1:1038745924617:web:47460c52ecc578f046f4d8",
+            "windows": "1:1038745924617:web:5598bc2531d4885b46f4d8"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
