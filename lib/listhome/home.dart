@@ -111,15 +111,14 @@ class _HomeState extends State<Home> {
         SizedBox(
           width: width,
           height: height,
-          child: Image.network(
-            "https://img.freepik.com/free-vector/hand-drawn-cardinal-cartoon-illustration_52683-129480.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip",
+          child: Image.asset(
+            "assets/images/parrot.avif",
             fit: BoxFit.cover,
           ),
         ),
-
         // App bar (top)
         Positioned(
-          top: 50,
+          top: 25,
           left: 0,
           width: width,
           child: Padding(
@@ -205,7 +204,7 @@ class _HomeState extends State<Home> {
 
         // Welcome Text
         Positioned(
-          top: 180,
+          top: 160,
           width: width,
           child: Center(
             child: RichText(
@@ -225,7 +224,7 @@ class _HomeState extends State<Home> {
 
         // Stats Card
         Positioned(
-          top: 300,
+          top: 260,
           left: 20,
           right: 20,
           child: Container(
@@ -254,8 +253,8 @@ class _HomeState extends State<Home> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(50),
-                          child: Image.network(
-                            'https://img.freepik.com/free-vector/school-timetable-template_1308-32663.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          child: Image.asset(
+                            'assets/images/lich.avif',
                             width: 42,
                             height: 40,
                             fit: BoxFit.cover,
@@ -300,8 +299,8 @@ class _HomeState extends State<Home> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(50),
-                            child: Image.network(
-                              'https://img.freepik.com/free-vector/open-book-with-nature-scene_1308-171788.jpg',
+                            child: Image.asset(
+                              'assets/images/nha.avif',
                               width: 42,
                               height: 40,
                               fit: BoxFit.cover,
@@ -325,8 +324,8 @@ class _HomeState extends State<Home> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(50),
-                            child: Image.network(
-                              'https://img.freepik.com/free-photo/clock-cartoon-illustration_23-2151470825.jpg',
+                            child: Image.asset(
+                              'assets/images/clock.avif',
                               width: 42,
                               height: 40,
                               fit: BoxFit.cover,
@@ -355,7 +354,7 @@ class _HomeState extends State<Home> {
         // Book Category Title
         // Thay thế phần Book Category Title và thêm ScrollView
         Positioned(
-          top: 540,
+          top: 500,
           width: width,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

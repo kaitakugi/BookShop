@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study_app/bookdetail.dart';
+import 'package:study_app/listhome/attendance_page.dart';
+import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/services/bookservice.dart';
 import 'package:study_app/listhome/home.dart';
 import 'package:study_app/models/bookmodel.dart';
@@ -16,6 +18,76 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   int currentPageIndex = 0;
+
+  //cập nhật 2 thông số để xác định sách đã mở và tổng số sách trong book vipvip
+  int unlockedCount = 0;
+  int totalCount = 0;
+
+  UserModel? user;
+  bool isLoading = true;
+
+  //hàm fetch data để lấy dữ liệu từ firestore
+  Future<void> fetchUserData() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        if (mounted) {
+          setState(() {
+            user = null;
+            isLoading = false;
+          });
+        }
+        return;
+      }
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      // Lấy danh sách ID sách đã mở khóa
+      final unlockedSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .collection('unlockedBooks')
+          .get();
+
+      // Lấy tất cả sách cần xu để mở
+      final lockedBooksSnap = await FirebaseFirestore.instance
+          .collection('books')
+          .where('lock', isEqualTo: true)
+          .where('price', isGreaterThan: 0)
+          .get();
+
+      // Lọc sách đã mở khóa trong danh sách cần xu
+      final unlockedBookIds = unlockedSnap.docs.map((doc) => doc.id).toSet();
+      final unlockedLockedBooks = lockedBooksSnap.docs
+          .where((doc) => unlockedBookIds.contains(doc.id))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          user = userDoc.exists
+              ? UserModel.fromMap(userDoc.data() as Map<String, dynamic>)
+              : null;
+          unlockedCount = unlockedLockedBooks.length;
+          totalCount = lockedBooksSnap.size;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Lỗi khi lấy dữ liệu Firestore: $e");
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể tải dữ liệu người dùng')),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -81,16 +153,11 @@ class _SearchState extends State<Search> {
           children: [
             // Background image with loading and error handling
             Positioned.fill(
-              child: Image.network(
-                "https://img.freepik.com/free-photo/bookshelf-filled-with-books-library_123827-23429.jpg",
+              child: Image.asset(
+                "assets/images/search.avif",
                 fit: BoxFit.cover,
-                // ignore: deprecated_member_use
                 color: Colors.black.withOpacity(0.2),
                 colorBlendMode: BlendMode.darken,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(color: Colors.black12);
-                },
                 errorBuilder: (context, error, stackTrace) =>
                     Container(color: Colors.black45),
               ),
@@ -152,16 +219,17 @@ class _SearchState extends State<Search> {
                         Row(
                           children: [
                             ElevatedButton.icon(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const AttendancePage()),
+                                ).then((_) =>
+                                    fetchUserData()); // reload lại coin sau khi điểm danh
+                              },
                               icon: const Icon(Icons.add_circle,
-                                  color: Color.fromARGB(255, 224, 195, 7)),
-                              label: const Text('28',
-                                  style: TextStyle(color: Colors.black)),
+                                  color: Colors.amber),
+                              label: Text('${user?.coins ?? 0}'),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton.icon(
@@ -230,7 +298,7 @@ class _SearchState extends State<Search> {
                       children: [
                         categoryItem(
                           'Adventure',
-                          'https://img.freepik.com/free-photo/3d-rendering-cartoon-characters-exploring-like-forest_23-2150991431.jpg',
+                          'assets/images/adventure.jpg',
                           () {
                             setState(() {
                               selectedCategory = 'Adventure';
@@ -239,7 +307,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Comedy',
-                          'https://img.freepik.com/free-vector/cartoon-stand-up-comedy-background_52683-75229.jpg',
+                          'assets/images/comedy.avif',
                           () {
                             setState(() {
                               selectedCategory = 'Comedy';
@@ -248,7 +316,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Fantasy',
-                          'https://img.freepik.com/free-vector/gradient-children-book-illustration_52683-142946.jpg',
+                          'assets/images/fantasy.avif',
                           () {
                             setState(() {
                               selectedCategory = 'Fantasy';
@@ -257,7 +325,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Horror',
-                          'https://img.freepik.com/free-photo/scary-background-design_23-2150912069.jpg',
+                          'assets/images/horror.avif',
                           () {
                             setState(() {
                               selectedCategory = 'Horror';
@@ -266,7 +334,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Drama',
-                          'https://img.freepik.com/free-vector/theatre-masks-backdrop_98292-6042.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          'assets/images/drama.avif',
                           () {
                             setState(() {
                               selectedCategory = 'Drama';
@@ -275,7 +343,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Fiction',
-                          'https://img.freepik.com/free-vector/realistic-fantasy-illustration-dwarf-illustration_52683-95391.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          'assets/images/fiction.avif',
                           () {
                             setState(() {
                               selectedCategory = 'Fiction';
@@ -284,7 +352,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Liternature',
-                          'https://img.freepik.com/free-vector/eco-tourism-concept_23-2148630127.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          'assets/images/liternator.jpg',
                           () {
                             setState(() {
                               selectedCategory = 'Liternator';
@@ -293,7 +361,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'Manga',
-                          'https://img.freepik.com/free-vector/hand-drawn-vintage-comic-illustration_23-2149624608.jpg?ga=GA1.1.983139440.1730316710&semt=ais_siglip',
+                          'assets/images/manga.avif',
                           () {
                             setState(() {
                               selectedCategory = 'Manga';
@@ -302,7 +370,7 @@ class _SearchState extends State<Search> {
                         ),
                         categoryItem(
                           'All',
-                          'https://img.icons8.com/color/96/books.png', // icon tùy bạn chọn
+                          'assets/images/books.png', // icon tùy bạn chọn
                           () {
                             setState(() {
                               selectedCategory = 'All';
@@ -375,23 +443,10 @@ class _SearchState extends State<Search> {
                                           borderRadius:
                                               const BorderRadius.vertical(
                                                   top: Radius.circular(12)),
-                                          child: Image.network(
+                                          child: Image.asset(
                                             book.image,
                                             height: 150,
                                             fit: BoxFit.cover,
-                                            loadingBuilder: (context, child,
-                                                loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              }
-                                              return Container(
-                                                height: 150,
-                                                color: Colors.grey[200],
-                                                child: const Center(
-                                                    child:
-                                                        CircularProgressIndicator()),
-                                              );
-                                            },
                                             errorBuilder:
                                                 (context, error, stackTrace) =>
                                                     Container(
@@ -490,21 +545,11 @@ class _SearchState extends State<Search> {
             ClipRRect(
               borderRadius:
                   const BorderRadius.horizontal(left: Radius.circular(12)),
-              child: Image.network(
+              child: Image.asset(
                 imageUrl,
                 width: 40,
                 height: 50, // giảm height tại đây
                 fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    width: 40,
-                    height: 50,
-                    color: Colors.grey[200],
-                    child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
-                  );
-                },
                 errorBuilder: (context, error, stackTrace) => Container(
                   width: 40,
                   height: 50,

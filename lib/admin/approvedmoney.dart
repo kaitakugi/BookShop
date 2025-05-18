@@ -11,7 +11,7 @@ class AdminTopUpApprovalScreen extends StatelessWidget {
     final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
     final userSnapshot = await userRef.get();
 
-    final userData = userSnapshot.data() as Map<String, dynamic>?;
+    final userData = userSnapshot.data();
 
     final currentMoney = userData?['money'] ?? 0;
 
