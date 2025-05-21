@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/forum/postdetail.dart';
-import 'package:study_app/writestory.dart';
+import 'package:study_app/forum/writestory.dart';
 
 class Forum extends StatefulWidget {
   const Forum({super.key});

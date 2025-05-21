@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:study_app/listhome/attendance_page.dart';
 import 'package:study_app/listhome/buybook_page.dart';
 import 'package:study_app/models/usermodel.dart';
-import 'package:study_app/search.dart';
+import 'package:study_app/search/search.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_auth/firebase_auth.dart';
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:study_app/vip/vippage.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -191,9 +192,14 @@ class _HomeState extends State<Home> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 8),
                       ),
-                      onPressed: () {},
-                      icon: const Icon(Icons.translate, color: Colors.green),
-                      label: const Text("ENG"),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const VipPage()),
+                        );
+                      },
+                      icon: const Icon(Icons.diamond, color: Colors.green),
+                      label: const Text("VIP"),
                     ),
                   ],
                 )
@@ -269,7 +275,7 @@ class _HomeState extends State<Home> {
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            const Text('Bookshop VIP'),
+                            const Text('Bookshop Coins'),
                           ],
                         )
                       ],
@@ -279,7 +285,11 @@ class _HomeState extends State<Home> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => BuyBookPage()),
+                          MaterialPageRoute(
+                            builder: (_) => BuyBookPage(
+                              currentUser: user,
+                            ),
+                          ),
                         ).then((_) =>
                             fetchUserData()); // để cập nhật xu nếu người dùng mua sách
                       },

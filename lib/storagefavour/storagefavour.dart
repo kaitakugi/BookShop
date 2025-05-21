@@ -28,6 +28,7 @@ class _StorageFavourState extends State<StorageFavour> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thư viện của tôi'),
+        backgroundColor: Colors.teal,
         centerTitle: true,
       ),
       body: _pages[_selectedIndex],

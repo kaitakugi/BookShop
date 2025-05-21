@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:study_app/forum/forum.dart';
 import 'package:study_app/listhome/home.dart';
 import 'package:study_app/login_register_page.dart';
-import 'package:study_app/myboook/mybook.dart';
-import 'package:study_app/search.dart';
-import 'package:study_app/profile.dart';
+import 'package:study_app/mybook/mybook.dart';
+import 'package:study_app/search/search.dart';
+import 'package:study_app/profile/profile.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -13,6 +14,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  MobileAds.instance.initialize();
   runApp(const MyApp());
 }
 

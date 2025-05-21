@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:study_app/bookdetail.dart';
+import 'package:study_app/models/usermodel.dart';
+import 'package:study_app/search/bookdetail.dart';
 import 'package:study_app/services/bookservice.dart';
 import 'package:study_app/models/bookmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,8 +8,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BuyBookPage extends StatelessWidget {
   final BookService bookService = BookService();
+  final UserModel? currentUser;
 
-  BuyBookPage({super.key});
+  BuyBookPage({
+    super.key,
+    required this.currentUser,
+  });
 
   Future<Map<String, dynamic>> _fetchData() async {
     final books = await bookService.getLockedBooks().first;
@@ -18,12 +23,11 @@ class BuyBookPage extends StatelessWidget {
       return {'books': books, 'unlockedBookIds': <String>{}};
     }
 
-    final unlockedSnap =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('unlockedBooks')
-            .get();
+    final unlockedSnap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('unlockedBooks')
+        .get();
 
     final unlockedBookIds = unlockedSnap.docs.map((doc) => doc.id).toSet();
 
@@ -74,16 +78,18 @@ class BuyBookPage extends StatelessWidget {
                     final userDoc = FirebaseFirestore.instance
                         .collection('users')
                         .doc(userId);
-                    final unlockedRef = userDoc
-                        .collection('unlockedBooks')
-                        .doc(book.id);
+                    final unlockedRef =
+                        userDoc.collection('unlockedBooks').doc(book.id);
 
                     if (isUnlocked) {
                       // Đã mở khóa
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => BookDetailPage(book: book),
+                          builder: (_) => BookDetailPage(
+                            book: book,
+                            currentUser: currentUser!,
+                          ),
                         ),
                       );
                     } else {
@@ -95,76 +101,79 @@ class BuyBookPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => BookDetailPage(book: book),
+                            builder: (_) => BookDetailPage(
+                              book: book,
+                              currentUser: currentUser!,
+                            ),
                           ),
                         );
                       } else {
                         // Yêu cầu mở khóa bằng xu
                         showDialog(
                           context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: const Text("Mở khóa sách"),
-                                content: Text(
-                                  "Bạn cần ${book.price} xu để mở khóa sách này.",
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("Hủy"),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      final userSnap = await userDoc.get();
-                                      final currentCoins =
-                                          userSnap.data()?['coins'] ?? 0;
-
-                                      if (currentCoins >= book.price) {
-                                        await userDoc.update({
-                                          'coins': FieldValue.increment(
-                                            -book.price,
-                                          ),
-                                        });
-                                        await unlockedRef.set({
-                                          'unlockedAt':
-                                              FieldValue.serverTimestamp(),
-                                        });
-
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Mở khóa thành công!",
-                                            ),
-                                          ),
-                                        );
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (_) =>
-                                                    BookDetailPage(book: book),
-                                          ),
-                                        );
-                                      } else {
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Bạn không đủ xu để mở khóa.",
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    child: const Text("Mở khóa"),
-                                  ),
-                                ],
+                          builder: (context) => AlertDialog(
+                            title: const Text("Mở khóa sách"),
+                            content: Text(
+                              "Bạn cần ${book.price} xu để mở khóa sách này.",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Hủy"),
                               ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final userSnap = await userDoc.get();
+                                  final currentCoins =
+                                      userSnap.data()?['coins'] ?? 0;
+
+                                  if (currentCoins >= book.price) {
+                                    await userDoc.update({
+                                      'coins': FieldValue.increment(
+                                        -book.price,
+                                      ),
+                                    });
+                                    await unlockedRef.set({
+                                      'unlockedAt':
+                                          FieldValue.serverTimestamp(),
+                                    });
+
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Mở khóa thành công!",
+                                        ),
+                                      ),
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => BookDetailPage(
+                                          book: book,
+                                          currentUser: currentUser!,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Bạn không đủ xu để mở khóa.",
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text("Mở khóa"),
+                              ),
+                            ],
+                          ),
                         );
                       }
                     }
@@ -202,15 +211,15 @@ class BuyBookPage extends StatelessWidget {
                                     ),
                                   );
                                 },
-                                errorBuilder:
-                                    (context, error, stackTrace) => Container(
-                                      height: 150,
-                                      color: Colors.grey[300],
-                                      child: const Icon(
-                                        Icons.error,
-                                        color: Colors.red,
-                                      ),
-                                    ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  height: 150,
+                                  color: Colors.grey[300],
+                                  child: const Icon(
+                                    Icons.error,
+                                    color: Colors.red,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
