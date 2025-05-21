@@ -7,6 +7,7 @@ import 'package:study_app/listhome/home.dart';
 import 'package:study_app/models/bookmodel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:study_app/vip/vippage.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key});
@@ -234,16 +235,25 @@ class _SearchState extends State<Search> {
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton.icon(
-                              onPressed: () {},
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
-                              icon: const Icon(Icons.translate,
-                                  color: Color.fromARGB(255, 19, 199, 25)),
-                              label: const Text('ENG',
-                                  style: TextStyle(color: Colors.black)),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const VipPage()),
+                                );
+                              },
+                              icon: const Icon(Icons.diamond,
+                                  color: Colors.green),
+                              label: const Text("VIP"),
                             ),
                           ],
                         )
