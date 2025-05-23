@@ -47,9 +47,9 @@ class VipPage extends StatelessWidget {
                   final userModel = UserModel.fromFirestore(userSnapshot);
 
                   const vipPrices = {
-                    'vip1': 100000,
-                    'vip2': 500000,
-                    'vip3': 1000000,
+                    'vip1': 99999,
+                    'vip2': 499000,
+                    'vip3': 999000,
                   };
 
                   final int price = vipPrices[vipId] ?? 0;
@@ -116,9 +116,9 @@ class VipCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vipPrices = {
-      'vip1': 100000,
-      'vip2': 500000,
-      'vip3': 1000000,
+      'vip1': 99999,
+      'vip2': 499000,
+      'vip3': 999000,
     };
 
     return FlipCard(

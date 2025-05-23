@@ -57,7 +57,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Row(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
@@ -67,7 +67,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     Text(
                       '${NumberFormat("#,###", "vi_VN").format(_money)} VNĐ',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.green,
                       ),

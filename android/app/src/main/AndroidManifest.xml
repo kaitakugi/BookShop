@@ -2,7 +2,7 @@
     package="com.example.study_app">
 
     <application
-        android:label="study_app"
+        android:label="STL LitZone"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
