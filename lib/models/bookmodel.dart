@@ -8,7 +8,8 @@ class Book {
   String image;
   String category;
   bool lock;
-  int price; // 🔒 true nếu sách cần xu, false nếu miễn phí
+  int price;
+  List<String> tags; // ➕ Thêm trường tags
 
   Book({
     required this.id,
@@ -18,7 +19,8 @@ class Book {
     required this.image,
     required this.category,
     this.lock = false,
-    required this.price, // Mặc định là sách miễn phí
+    required this.price,
+    this.tags = const [], // Mặc định rỗng
   });
 
   factory Book.fromFirestore(DocumentSnapshot doc) {
@@ -32,7 +34,9 @@ class Book {
       image: data['imageUrl'] ?? '',
       category: data['category'] ?? 'Không rõ',
       lock: data['lock'] ?? false,
-      price: data['price'] ?? 0, // Đọc field lock, mặc định là false
+      price: data['price'] ?? 0,
+      tags:
+          List<String>.from(data['tags'] ?? []), // ➕ đọc mảng tags từ Firestore
     );
   }
 
@@ -46,7 +50,8 @@ class Book {
       'imageUrl': image,
       'category': category,
       'lock': lock,
-      'price': price // Lưu vào Firestore
+      'price': price,
+      'tags': tags, // ➕ lưu tags
     };
   }
 }

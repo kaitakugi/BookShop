@@ -33,7 +33,8 @@ class AdminTopUpApprovalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Duyệt yêu cầu nạp tiền')),
+      appBar: AppBar(title: const Text('Duyệt yêu cầu nạp tiền'),
+      backgroundColor: Colors.blueAccent),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('topup_requests')

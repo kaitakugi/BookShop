@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:study_app/models/bookmodel.dart';
 
+import 'mybookdetail.dart';
+
 class MyBook extends StatefulWidget {
   const MyBook({super.key});
 
@@ -144,9 +146,8 @@ class _MyBookState extends State<MyBook> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => BookDetailPage(
+                                          builder: (_) => MyBookDetailPage(
                                             book: book,
-                                            currentUser: currentUser,
                                           ),
                                         ),
                                       );

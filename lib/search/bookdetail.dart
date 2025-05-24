@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:study_app/forum/forum.dart';
 import 'package:study_app/models/bookmodel.dart';
 import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/search/chapter.dart';
@@ -32,9 +33,60 @@ class _BookDetailPageState extends State<BookDetailPage> {
   bool _isRewardedAdReady = false;
   bool _isAdWatched = false; // Quảng cáo đã xem xong chưa
 
+  final TextEditingController _commentbookController = TextEditingController();
+  UserModel? user;
+
   @override
   void initState() {
     super.initState();
+  }
+
+  // ignore: unused_element
+  Future<void> _fetchUser() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+      if (doc.exists) {
+        setState(() {
+          user = UserModel(
+            username: doc['username'],
+            email: doc['email'],
+            password: '',
+          );
+        });
+      }
+    }
+  }
+
+  // ignore: unused_element
+  Future<void> _addComment() async {
+    final text = _commentbookController.text.trim();
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (text.isNotEmpty && currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+      final username = doc['username'];
+
+      final newComment = '$username: $text';
+
+      await FirebaseFirestore.instance
+          .collection('books')
+          .doc(widget.book.id)
+          .collection('comments')
+          .add({
+        'username': username,
+        'content': text,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      _commentbookController.clear();
+    }
   }
 
   void _initializeAds() {
@@ -52,7 +104,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          debugPrint('Banner Ad failed to load: $error');
+          debugPrint('Banner Ad failed to load');
         },
       ),
     );
@@ -268,20 +320,59 @@ class _BookDetailPageState extends State<BookDetailPage> {
                 },
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Comments',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              const Text("Comments:",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 300, // hoặc MediaQuery.of(context).size.height * 0.4
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('books')
+                      .doc(widget.book.id)
+                      .collection('comments')
+                      .orderBy('timestamp', descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('Chưa có bình luận nào'));
+                    }
+
+                    final comments = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final comment =
+                        comments[index].data() as Map<String, dynamic>;
+                        return ListTile(
+                          leading: const Icon(Icons.comment),
+                          title: Text(comment['username'] ?? 'Ẩn danh'),
+                          subtitle: Text(comment['content'] ?? ''),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text('User ${index + 1}'),
-                    subtitle: const Text('This is a comment about the book.'),
-                  );
-                },
+
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentbookController,
+                      decoration: const InputDecoration(
+                        hintText: "Write a comment...",
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: _addComment,
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               if (!isCurrentlyPremium && _isBannerAdReady)

@@ -5,6 +5,8 @@ import 'package:study_app/admin/forumanage.dart';
 import 'package:study_app/admin/approvedmoney.dart';
 import 'package:study_app/admin/pendingbook.dart';
 import 'package:study_app/login_register_page.dart';
+
+import 'admincreatepostpage.dart';
 // bạn cần import trang login/register
 
 class AdminPage extends StatefulWidget {
@@ -20,7 +22,8 @@ class _AdminPageState extends State<AdminPage> {
     "Manage Forum",
     "approve money transfer",
     "Pending Books",
-    "Manage Users"
+    "Manage Users",
+    "Post News",
   ];
 
   final List<Color> colors = [
@@ -28,7 +31,8 @@ class _AdminPageState extends State<AdminPage> {
     Colors.greenAccent,
     Colors.blueAccent,
     Colors.orangeAccent,
-    Colors.purpleAccent
+    Colors.purpleAccent,
+    Colors.yellowAccent,
   ];
 
   int? hoveredIndex;
@@ -83,6 +87,9 @@ class _AdminPageState extends State<AdminPage> {
                       break;
                     case 4:
                       targetPage = const UserManage();
+                      break;
+                    case 5:
+                      targetPage = const AdminCreatePostPage();
                       break;
                     default:
                       targetPage =

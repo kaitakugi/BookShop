@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:study_app/models/usermodel.dart';
+import 'package:study_app/vip/vip1page.dart';
+import 'package:study_app/vip/vip2page.dart';
+import 'package:study_app/vip/vip3page.dart';
 
 class VipPage extends StatelessWidget {
   const VipPage({super.key});
@@ -47,7 +50,7 @@ class VipPage extends StatelessWidget {
                   final userModel = UserModel.fromFirestore(userSnapshot);
 
                   const vipPrices = {
-                    'vip1': 99999,
+                    'vip1': 99000,
                     'vip2': 499000,
                     'vip3': 999000,
                   };
@@ -78,11 +81,26 @@ class VipPage extends StatelessWidget {
                 },
                 onDetails: () {
                   if (isPurchased) {
+                    Widget destination;
+                    switch (vipId) {
+                      case 'vip1':
+                        destination = const Vip1Page();
+                        break;
+                      case 'vip2':
+                        destination = const Vip2Page();
+                        break;
+                      case 'vip3':
+                        destination = const Vip3Page();
+                        break;
+                      default:
+                        destination = const Scaffold(
+                          body: Center(child: Text("Không tìm thấy trang VIP")),
+                        );
+                    }
+
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => VipDetailPage(vipId: vipId),
-                      ),
+                      MaterialPageRoute(builder: (_) => destination),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +134,7 @@ class VipCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vipPrices = {
-      'vip1': 99999,
+      'vip1': 99000,
       'vip2': 499000,
       'vip3': 999000,
     };
@@ -169,22 +187,6 @@ class VipCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class VipDetailPage extends StatelessWidget {
-  final String vipId;
-
-  const VipDetailPage({super.key, required this.vipId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Chi tiết $vipId")),
-      body: Center(
-        child: Text("Chi tiết quyền lợi của $vipId ở đây"),
       ),
     );
   }
