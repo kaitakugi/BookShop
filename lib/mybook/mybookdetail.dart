@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:study_app/forum/forum.dart';
 import 'package:study_app/models/bookmodel.dart';
 import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/mybook/writemybook.dart';
 import 'package:study_app/search/chapter.dart';
-import 'package:study_app/wallet/buypackage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

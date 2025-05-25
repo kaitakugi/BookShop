@@ -2,11 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../models/adminpostmodel.dart';
 import '../models/usermodel.dart';
 
 class NewsPage extends StatefulWidget {
-
   const NewsPage({super.key});
 
   @override
@@ -14,8 +12,8 @@ class NewsPage extends StatefulWidget {
 }
 
 class _NewsPage extends State<NewsPage> {
-
-  final TextEditingController _commentnewspostController = TextEditingController();
+  final TextEditingController _commentnewspostController =
+      TextEditingController();
   UserModel? user;
 
   @override
@@ -28,7 +26,6 @@ class _NewsPage extends State<NewsPage> {
     _commentnewspostController.dispose();
     super.dispose();
   }
-
 
   // ignore: unused_element
   Future<void> _fetchUser() async {
@@ -56,7 +53,10 @@ class _NewsPage extends State<NewsPage> {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (text.isNotEmpty && currentUser != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
       final username = doc['username'];
 
       await FirebaseFirestore.instance
@@ -83,7 +83,8 @@ class _NewsPage extends State<NewsPage> {
         backgroundColor: Colors.yellowAccent,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: newsCollection.orderBy('createdAt', descending: true).snapshots(),
+        stream:
+            newsCollection.orderBy('createdAt', descending: true).snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -101,11 +102,13 @@ class _NewsPage extends State<NewsPage> {
 
               return Card(
                 margin: const EdgeInsets.all(12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 elevation: 4,
                 child: ExpansionTile(
                   leading: const Icon(Icons.article),
-                  title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(
                     content,
                     maxLines: 2,
@@ -123,7 +126,7 @@ class _NewsPage extends State<NewsPage> {
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.broken_image),
+                                const Icon(Icons.broken_image),
                           ),
                         ),
                       ),
@@ -136,12 +139,14 @@ class _NewsPage extends State<NewsPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text('Bình luận:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text('Bình luận:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                     // 👇 Bạn có thể chèn code comment của bạn tại đây
                     SizedBox(
-                      height: 250, // hoặc MediaQuery.of(context).size.height * 0.4
+                      height:
+                          250, // hoặc MediaQuery.of(context).size.height * 0.4
                       child: StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
                             .collection('news')
@@ -150,11 +155,15 @@ class _NewsPage extends State<NewsPage> {
                             .orderBy('timestamp', descending: true)
                             .snapshots(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
                           }
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                            return const Center(child: Text('Chưa có bình luận nào'));
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return const Center(
+                                child: Text('Chưa có bình luận nào'));
                           }
 
                           final comments = snapshot.data!.docs;
@@ -162,8 +171,8 @@ class _NewsPage extends State<NewsPage> {
                           return ListView.builder(
                             itemCount: comments.length,
                             itemBuilder: (context, index) {
-                              final comment =
-                              comments[index].data() as Map<String, dynamic>;
+                              final comment = comments[index].data()
+                                  as Map<String, dynamic>;
                               return ListTile(
                                 leading: const Icon(Icons.comment),
                                 title: Text(comment['username'] ?? 'Ẩn danh'),
@@ -183,9 +192,10 @@ class _NewsPage extends State<NewsPage> {
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.send),
                             onPressed: () => _addComment(doc.id),
-                              // Gọi hàm comment(doc.id, nội dung) tại đây
+                            // Gọi hàm comment(doc.id, nội dung) tại đây
                           ),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
                     )

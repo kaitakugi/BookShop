@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
-import '../models/usermodel.dart';
 import 'newspage.dart';
 
 class Vip2Page extends StatefulWidget {
@@ -17,7 +16,6 @@ class _Vip2PageState extends State<Vip2Page> {
   bool hasCheckedIn = false;
   String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
   late DocumentReference userDocRef;
-
 
   @override
   void initState() {
