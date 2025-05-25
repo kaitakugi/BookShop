@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:study_app/search/bookdetail.dart';
 import 'package:study_app/listhome/attendance_page.dart';
 import 'package:study_app/models/usermodel.dart';
-import 'package:study_app/services/bookservice.dart';
+import 'package:study_app/services/adminservices/bookservice.dart';
 import 'package:study_app/listhome/home.dart';
 import 'package:study_app/models/bookmodel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
