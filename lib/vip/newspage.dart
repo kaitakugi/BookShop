@@ -75,12 +75,14 @@ class _NewsPage extends State<NewsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final newsCollection = FirebaseFirestore.instance.collection('news');
+    final isDark = theme.brightness == Brightness.dark; // Luôn trắng do nền là grey[900]
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kênh tin tức VIP'),
-        backgroundColor: Colors.yellowAccent,
+        backgroundColor: isDark ? Colors.grey[900] : Colors.amberAccent
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream:

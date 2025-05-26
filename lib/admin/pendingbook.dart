@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -72,13 +73,101 @@ class _AdminPendingBooksPageState extends State<AdminPendingBooksPage> {
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: ListTile(
-                  leading: Image.network(data['image'],
-                      width: 50, height: 70, fit: BoxFit.cover),
-                  title: Text(data['title']),
-                  subtitle: Text(data['author']),
-                  trailing: ElevatedButton(
-                    onPressed: () => approveBook(doc),
-                    child: const Text('Duyệt'),
+                  leading: Image.network(
+                    data['image'],
+                    width: 50,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 50,
+                      height: 70,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.error, color: Colors.red),
+                    ),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 50,
+                        height: 70,
+                        color: Colors.grey[200],
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    },
+                  ),
+                  title: Text(
+                    data['title'],
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  subtitle: Text(
+                    data['author'],
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => approveBook(doc),
+                        child: const Text('Duyệt'),
+                      ),
+                      const SizedBox(width: 8), // Khoảng cách giữa các nút
+                      ElevatedButton(
+                        onPressed: () async {
+                          final shouldDelete =
+                          await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Xác nhận xóa'),
+                              content: const Text(
+                                  'Bạn có chắc chắn muốn xóa sách này không?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context)
+                                          .pop(false),
+                                  child: const Text('Hủy'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context)
+                                          .pop(true),
+                                  child: const Text('Xóa'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (shouldDelete != true) return;
+
+                          final user =
+                              FirebaseAuth.instance.currentUser;
+                          if (user == null) return;
+
+                          try {
+                            await FirebaseFirestore.instance
+                                .collection('pending_books')
+                                .doc(doc.id)
+                                .delete();
+
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(
+                              const SnackBar(
+                                  content:
+                                  Text('Xóa sách thành công')),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(
+                              SnackBar(
+                                  content:
+                                  Text('Lỗi khi xóa sách: $e')),
+                            );
+                          }
+                        },
+                        child: const Text('Xóa'),
+                      ),
+                    ],
                   ),
                 ),
               );

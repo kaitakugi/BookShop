@@ -133,26 +133,33 @@ class VipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final vipPrices = {
       'vip1': 99000,
       'vip2': 499000,
       'vip3': 999000,
     };
 
+    final frontCardColor = isDark ? Colors.blueGrey[700] : Colors.blue.shade100;
+    final backCardColor = isDark ? Colors.grey[850] : Colors.amber.shade100;
+    final textColor = isDark ? Colors.white : Colors.black;
+
     return FlipCard(
       front: Card(
         elevation: 4,
-        color: Colors.blue.shade100,
+        color: frontCardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Center(
           child: Text(
             vipId.toUpperCase(),
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
           ),
         ),
       ),
       back: Card(
-        color: Colors.amber.shade100,
         elevation: 4,
+        color: backCardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
@@ -162,7 +169,10 @@ class VipCard extends StatelessWidget {
               children: [
                 Text(
                   "Đặc quyền của $vipId",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -176,6 +186,10 @@ class VipCard extends StatelessWidget {
                 else
                   ElevatedButton(
                     onPressed: onBuy,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? Colors.amber[700] : Colors.amber,
+                      foregroundColor: Colors.black,
+                    ),
                     child: const Text("Mua"),
                   ),
                 const SizedBox(height: 10),

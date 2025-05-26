@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/forum/postdetail.dart';
 import 'package:study_app/forum/writestory.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class Forum extends StatefulWidget {
   const Forum({super.key});
@@ -16,7 +18,6 @@ class Forum extends StatefulWidget {
 
 class _ForumState extends State<Forum> {
   final TextEditingController _postController = TextEditingController();
-
   UserModel? user;
   bool isLoading = true;
 
@@ -29,13 +30,11 @@ class _ForumState extends State<Forum> {
   Future<void> fetchUserData() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
-
       if (currentUser != null) {
         final doc = await FirebaseFirestore.instance
             .collection('users')
             .doc(currentUser.uid)
             .get();
-
         if (doc.exists) {
           setState(() {
             user = UserModel(
@@ -56,8 +55,9 @@ class _ForumState extends State<Forum> {
     if (_postController.text.isNotEmpty && user != null) {
       final newPost = {
         'name': user!.username,
-        'userId': FirebaseAuth.instance.currentUser!.uid, // 👈 Thêm dòng này
-        'profilePic': 'https://www.example.com/profile-pic.jpg',
+        'userId': FirebaseAuth.instance.currentUser!.uid,
+        'profilePic':
+            'https://i.pravatar.cc/150?u=${user!.email}', // dùng ảnh random
         'status': _postController.text,
         'comments': [],
         'likes': [],
@@ -69,14 +69,28 @@ class _ForumState extends State<Forum> {
     }
   }
 
+  String formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return '';
+    final date = timestamp.toDate();
+    return DateFormat('dd/MM/yyyy HH:mm').format(date);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? Colors.white70 : Colors.black;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final bgColor = isDark ? Colors.black : Colors.white;
+    final postButtonColor = isDark ? Colors.grey[900] : Colors.grey[500];
+
     return Scaffold(
+      backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('Forum'),
+        title: const Text('Cộng đồng'),
+        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: Icon(Icons.edit, color: iconColor),
             onPressed: () {
               Navigator.push(
                 context,
@@ -86,22 +100,53 @@ class _ForumState extends State<Forum> {
           ),
         ],
       ),
-      body: Padding(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _postController,
-              decoration: const InputDecoration(
-                labelText: 'Write a post...',
-                border: OutlineInputBorder(),
+            Material(
+              elevation: 3,
+              color: isDark ? Colors.grey[900] : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.white70, width: 2), // Thêm viền ở đây
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _addPost,
-              child: const Text('Post'),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _postController,
+                      style: TextStyle(color: textColor),
+                      decoration: InputDecoration(
+                        hintText: 'Chia sẻ điều gì đó...',
+                        hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
+                        border: InputBorder.none,
+                      ),
+                      maxLines: null,
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        onPressed: _addPost,
+                        icon: Icon(Icons.send, color: Colors.white),
+                        label: const Text('Đăng'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: postButtonColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -121,10 +166,11 @@ class _ForumState extends State<Forum> {
                     final data = doc.data() as Map<String, dynamic>;
                     return Post(
                       id: doc.id,
-                      userId: data['userId'] ?? '', // 👈 Thêm dòng này
+                      userId: data['userId'] ?? '',
                       name: data['name'] ?? '',
                       profilePic: data['profilePic'] ?? '',
                       status: data['status'] ?? '',
+                      timestamp: data['timestamp'],
                       comments: data['comments'] is List
                           ? List<String>.from(data['comments'])
                           : [],
@@ -158,6 +204,7 @@ class Post {
   final String status;
   final List<String> comments;
   final List<String> likedUsers;
+  final Timestamp timestamp;
 
   Post({
     required this.id,
@@ -167,9 +214,23 @@ class Post {
     required this.status,
     required this.comments,
     required this.likedUsers,
+    required this.timestamp,
   });
 
   int get likes => likedUsers.length;
+  factory Post.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Post(
+      id: doc.id,
+      name: data['name'] ?? '',
+      profilePic: data['profilePic'] ?? '',
+      status: data['status'] ?? '',
+      userId: data['userId'] ?? '',
+      likedUsers: List<String>.from(data['likes'] ?? []),
+      timestamp: data['timestamp'] ?? Timestamp.now(),
+      comments: [], // 🟢 BẮT BUỘC CÓ
+    );
+  }
 }
 
 class PostCard extends StatefulWidget {
@@ -229,28 +290,60 @@ class _PostCardState extends State<PostCard> {
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+    return Material(
+      elevation: 4,
+      color: isDark ? Colors.grey[900] : Colors.white.withOpacity(0.95),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark ? Colors.grey[800]! : Colors.grey.shade300,
+          width: 1.2,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 CircleAvatar(
                   backgroundImage: NetworkImage(post.profilePic),
-                  radius: 20,
+                  radius: 22,
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  post.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      post.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    Text(
+                      timeago.format(post.timestamp.toDate()),
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(post.status),
+            const SizedBox(height: 12),
+            Text(
+              post.status,
+              style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white70 : Colors.black,
+              ),
+            ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -259,59 +352,66 @@ class _PostCardState extends State<PostCard> {
                   children: [
                     IconButton(
                       icon: Icon(
-                        widget.post.likedUsers.contains(
-                                FirebaseAuth.instance.currentUser?.uid)
+                        likedUsers.contains(currentUser?.uid)
                             ? Icons.favorite
                             : Icons.favorite_border,
+                        color: Colors.redAccent,
                       ),
                       onPressed: _likePost,
-                      color: Colors.red,
                     ),
-                    Text('${widget.post.likedUsers.length} Likes')
+                    Text(
+                      '${likedUsers.length}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
                   ],
                 ),
-                TextButton.icon(
-                  onPressed: _goToDetail,
-                  icon: const Icon(Icons.comment_outlined),
-                  label: const Text('Comment'),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.comment_outlined),
+                      color: isDark ? Colors.white : Colors.black,
+                      onPressed: _goToDetail,
+                    ),
+                    if (currentUser?.uid == post.userId)
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        color: Colors.red,
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('Xác nhận'),
+                              content:
+                              const Text('Bạn có chắc muốn xóa bài viết này không?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text('Hủy'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Xóa'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            await FirebaseFirestore.instance
+                                .collection('forum')
+                                .doc(post.id)
+                                .delete();
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Đã xóa bài viết.')),
+                            );
+                          }
+                        },
+                      ),
+                  ],
                 ),
-
-                //button xóa chỉ khi người tạo post mới hiển thị
-                if (currentUser?.uid == post.userId)
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: const Text('Xác nhận'),
-                          content: const Text(
-                              'Bạn có chắc muốn xóa bài viết này không?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Hủy'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Xóa'),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
-                        await FirebaseFirestore.instance
-                            .collection('forum')
-                            .doc(post.id)
-                            .delete();
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Đã xóa bài viết.')),
-                        );
-                      }
-                    },
-                  ),
               ],
             ),
           ],
@@ -319,4 +419,5 @@ class _PostCardState extends State<PostCard> {
       ),
     );
   }
+
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// ignore: depend_on_referenced_packages
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:study_app/models/bookmodel.dart';
 import 'package:study_app/models/usermodel.dart';
@@ -9,11 +8,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class MyBookDetailPage extends StatefulWidget {
-  final Book book;
+  final String bookId; // Chỉ truyền bookId thay vì toàn bộ Book object
 
   const MyBookDetailPage({
     super.key,
-    required this.book,
+    required this.bookId,
   });
 
   @override
@@ -22,164 +21,172 @@ class MyBookDetailPage extends StatefulWidget {
 
 class _BookDetailPageState extends State<MyBookDetailPage> {
   UserModel? user;
-  List<Book> books = [];
-  List<bool> isExpanded = [];
-  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
   }
 
-  Future<void> fetchUserBooks() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('books')
-        .orderBy('createdAt', descending: true)
-        .get();
-
-    final loadedBooks = snapshot.docs.map((doc) {
-      final data = doc.data();
-      return Book(
-        id: doc.id,
-        title: data['title'] ?? '',
-        author: data['author'] ?? 'Không rõ',
-        description: data['description'] ?? '',
-        image: data['imageUrl'] ?? '',
-        category: data['category'] ?? 'Không rõ',
-        lock: data['lock'] ?? false,
-        price: data['price'] ?? 0,
-      );
-    }).toList();
-
-    setState(() {
-      books = loadedBooks;
-      isExpanded = List.filled(books.length, false);
-      isLoading = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final book = widget.book;
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     return StreamBuilder<DocumentSnapshot>(
-      stream:
-      FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+      stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+      builder: (context, userSnapshot) {
+        if (!userSnapshot.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        final userData = snapshot.data!;
+        final userData = userSnapshot.data!;
         final currentUser = UserModel.fromFirestore(userData);
-        final now = DateTime.now();
 
-        // Sau khi xem xong hoặc user là premium thì hiển thị nội dung trang
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(book.title),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Image.network(
-                book.image,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
+        // StreamBuilder để theo dõi thông tin sách cụ thể
+        return StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('books')
+              .doc(widget.bookId)
+              .snapshots(),
+          builder: (context, bookSnapshot) {
+            if (!bookSnapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (bookSnapshot.hasError || !bookSnapshot.data!.exists) {
+              return const Scaffold(
+                body: Center(child: Text('Không tìm thấy sách.')),
+              );
+            }
+
+            final bookData = bookSnapshot.data!.data() as Map<String, dynamic>;
+            final book = Book(
+              id: bookSnapshot.data!.id,
+              title: bookData['title'] ?? '',
+              author: bookData['author'] ?? 'Không rõ',
+              description: bookData['description'] ?? '',
+              image: bookData['imageUrl'] ?? '',
+              categories: List<String>.from(bookData['categories'] ?? []),
+              lock: bookData['lock'] ?? false,
+              price: bookData['price'] ?? 0,
+            );
+
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(
+                  book.title,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              body: ListView(
+                padding: const EdgeInsets.all(16.0),
                 children: [
-                  Text(
-                    book.title,
-                    style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Image.network(
+                    book.image,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 200,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.error, color: Colors.red),
+                    ),
                   ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => WriteMyBookPage(
-                            bookId: book.id,
-                            initialData: {
-                              'title': book.title,
-                              'author': book.author,
-                              'category': book.category,
-                              'description': book.description,
-                              'image': book.image,
-                            },
-                          ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          book.title,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                      );
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => WriteMyBookPage(
+                                bookId: book.id,
+                                initialData: {
+                                  'title': book.title,
+                                  'author': book.author,
+                                  'categories': book.categories,
+                                  'description': book.description,
+                                  'image': book.image,
+                                },
+                              ),
+                            ),
+                          );
 
-                      if (result == true) {
-                        fetchUserBooks(); // Làm mới danh sách sau khi chỉnh sửa
-                      }
+                          if (result == true) {
+                            // Không cần gọi fetchUserBooks vì StreamBuilder sẽ tự động cập nhật
+                          }
+                        },
+                        child: const Icon(Icons.edit),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Author: ${book.author}',
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    book.description,
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3, // Giới hạn mô tả để tránh overflow
+                  ),
+                  const SizedBox(height: 16),
+                  RatingBar.builder(
+                    initialRating: 4,
+                    minRating: 1,
+                    itemSize: 30,
+                    itemBuilder: (context, _) => const Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    onRatingUpdate: (rating) {
+                      debugPrint("Rating: $rating");
                     },
-                    child: const Icon(Icons.edit),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Chapters',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 10,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text('Chapter ${index + 1}'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChapterPage(chapterIndex: index),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Author: ${book.author}',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                book.description,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              RatingBar.builder(
-                initialRating: 4,
-                minRating: 1,
-                itemSize: 30,
-                itemBuilder: (context, _) => const Icon(
-                  Icons.star,
-                  color: Colors.amber,
-                ),
-                onRatingUpdate: (rating) {
-                  debugPrint("Rating: $rating");
-                },
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Chapters',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text('Chapter ${index + 1}'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ChapterPage(chapterIndex: index),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

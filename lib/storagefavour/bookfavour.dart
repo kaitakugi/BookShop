@@ -61,7 +61,7 @@ class FavouriteBook extends StatelessWidget {
                   ),
                   title: Text(book.title),
                   subtitle: Text(
-                      "Tác giả: ${book.author}\nThể loại: ${book.category}"),
+                      "Tác giả: ${book.author}\nThể loại: ${book.categories.join(', ')}"),
                   isThreeLine: true,
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),

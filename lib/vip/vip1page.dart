@@ -61,6 +61,9 @@ class _Vip1PageState extends State<Vip1Page> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(title: const Text("VIP 1")),
       body: Center(
@@ -68,10 +71,10 @@ class _Vip1PageState extends State<Vip1Page> {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? Colors.grey[900] : Colors.white70,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.5),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -82,7 +85,6 @@ class _Vip1PageState extends State<Vip1Page> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Dòng điểm danh
               Row(
                 children: [
                   Icon(
@@ -95,10 +97,9 @@ class _Vip1PageState extends State<Vip1Page> {
                       hasCheckedIn
                           ? "Đã điểm danh hôm nay"
                           : "Chưa điểm danh hôm nay",
-                      style: const TextStyle(fontSize: 18),
+                      style: theme.textTheme.bodyLarge,
                     ),
                   ),
-                  // Chỉ hiện nút bấm khi chưa điểm danh
                   if (!hasCheckedIn)
                     ElevatedButton(
                       onPressed: handleCheckIn,
@@ -109,19 +110,17 @@ class _Vip1PageState extends State<Vip1Page> {
                       ),
                       child: const Icon(Icons.add, size: 24),
                     ),
-                  // Nếu đã điểm danh thì không hiện icon check phía cuối nữa
                 ],
               ),
               const SizedBox(height: 25),
-              // Dòng cho phép đọc sách VIP1, luôn tick xanh
               Row(
-                children: const [
-                  Icon(Icons.check_circle, color: Colors.green),
-                  SizedBox(width: 8),
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       "Được phép đọc sách có tag VIP1",
-                      style: TextStyle(fontSize: 18, color: Colors.black87),
+                      style: theme.textTheme.bodyLarge,
                     ),
                   ),
                 ],

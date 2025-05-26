@@ -61,7 +61,7 @@ class BuyBookPage extends StatelessWidget {
               itemCount: books.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.65,
+                childAspectRatio: 0.63,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
@@ -237,7 +237,7 @@ class BuyBookPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                book.category,
+                                book.categories.join(', '),
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 12,

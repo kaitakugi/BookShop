@@ -83,46 +83,70 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
     required String price,
     required VoidCallback onBuy,
     required bool isPurchased,
+    required BuildContext context,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF9C4), // vàng trầm nhạt
-        border: Border.all(
-            color: const Color(0xFFFFD600), width: 2), // viền vàng đậm
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Text('Giá: $price', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: isPurchased ? null : onBuy,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isPurchased ? Colors.grey : Colors.amber,
-                ),
-                child: Text(isPurchased ? 'Đã mua' : 'Mua ngay'),
-              ),
-            ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      elevation: 3,
+      borderRadius: BorderRadius.circular(12),
+      color: isDark ? Colors.grey[850] : const Color(0xFFFFF9C4), // nền
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isDark ? Colors.grey : const Color(0xFFFFD600),
+            width: 2,
           ),
-          if (isPurchased)
-            const Positioned(
-              top: 0,
-              right: 0,
-              child: Icon(Icons.check_circle, color: Colors.green, size: 28),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Giá: $price',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: isPurchased ? null : onBuy,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isPurchased
+                        ? Colors.grey
+                        : (isDark ? Colors.amber.shade700 : Colors.amber),
+                    foregroundColor: Colors.black,
+                  ),
+                  child: Text(isPurchased ? 'Đã mua' : 'Mua ngay'),
+                ),
+              ],
             ),
-        ],
+            if (isPurchased)
+              const Positioned(
+                top: 0,
+                right: 0,
+                child: Icon(Icons.check_circle, color: Colors.green, size: 28),
+              ),
+          ],
+        ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +168,7 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
                 "week",
               ),
               isPurchased: isWeekPurchased,
+              context: context,
             ),
             buildPackageCard(
               title: 'Gói tháng (30 ngày)',
@@ -155,6 +180,7 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
                 "month",
               ),
               isPurchased: isMonthPurchased,
+              context: context,
             ),
           ],
         ),

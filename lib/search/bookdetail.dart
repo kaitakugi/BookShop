@@ -164,6 +164,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
   Widget build(BuildContext context) {
     final book = widget.book;
     final uid = FirebaseAuth.instance.currentUser!.uid;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return StreamBuilder<DocumentSnapshot>(
       stream:
@@ -255,46 +256,8 @@ class _BookDetailPageState extends State<BookDetailPage> {
                 },
               ),
               const SizedBox(height: 16),
-              if (!isCurrentlyPremium)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        "🔔 Quảng cáo 🔔",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                          "Mua gói để đọc sách không bị gián đoạn bởi quảng cáo!"),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  BuyPackagePage(currentUser: currentUser),
-                            ),
-                          );
+              if (!isCurrentlyPremium) buildAdCard(currentUser, isDark),
 
-                          if (result == true) {
-                            setState(() {
-                              _isAdWatched = true;
-                            });
-                          }
-                        },
-                        child: const Text("Mua gói ngay"),
-                      ),
-                    ],
-                  ),
-                ),
               const Text(
                 'Chapters',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -383,6 +346,71 @@ class _BookDetailPageState extends State<BookDetailPage> {
           ),
         );
       },
+    );
+  }
+  Widget buildAdCard(UserModel currentUser, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: Material(
+        color: isDark
+            ? Colors.orange.withOpacity(0.1)
+            : Colors.orange.withOpacity(0.15),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: isDark ? Colors.orange.shade700 : Colors.orange.shade300,
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text(
+                "🔔 Quảng cáo 🔔",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Mua gói để đọc sách không bị gián đoạn bởi quảng cáo!",
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orangeAccent.shade200,
+                  foregroundColor: Colors.black,
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BuyPackagePage(currentUser: currentUser),
+                    ),
+                  );
+                  if (result == true) {
+                    setState(() {
+                      _isAdWatched = true;
+                    });
+                  }
+                },
+                child: const Text("Mua gói ngay"),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

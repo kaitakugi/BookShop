@@ -6,7 +6,7 @@ class Book {
   String author;
   String description;
   String image;
-  String category;
+  List<String> categories;
   bool lock;
   int price;
   List<String> tags; // ➕ Thêm trường tags
@@ -17,7 +17,7 @@ class Book {
     required this.author,
     required this.description,
     required this.image,
-    required this.category,
+    required this.categories,
     this.lock = false,
     required this.price,
     this.tags = const [], // Mặc định rỗng
@@ -32,7 +32,7 @@ class Book {
       author: data['author'] ?? 'Không rõ',
       description: data['description'] ?? '',
       image: data['imageUrl'] ?? '',
-      category: data['category'] ?? 'Không rõ',
+      categories: List<String>.from(data['categories'] ?? []),
       lock: data['lock'] ?? false,
       price: data['price'] ?? 0,
       tags:
@@ -48,7 +48,7 @@ class Book {
       'author': author,
       'description': description,
       'imageUrl': image,
-      'category': category,
+      'categories': categories,
       'lock': lock,
       'price': price,
       'tags': tags, // ➕ lưu tags

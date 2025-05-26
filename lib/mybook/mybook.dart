@@ -45,7 +45,7 @@ class _MyBookState extends State<MyBook> {
         author: data['author'] ?? 'Không rõ',
         description: data['description'] ?? '',
         image: data['imageUrl'] ?? '',
-        category: data['category'] ?? 'Không rõ',
+        categories: List<String>.from(data['categories'] ?? []),
         lock: data['lock'] ?? false,
         price: data['price'] ?? 0,
       );
@@ -69,7 +69,7 @@ class _MyBookState extends State<MyBook> {
       'bookId': book.id,
       'title': book.title,
       'author': book.author,
-      'category': book.category,
+      'categories': book.categories,
       'description': book.description,
       'image': book.image,
       'requestedAt': FieldValue.serverTimestamp(),
@@ -146,7 +146,7 @@ class _MyBookState extends State<MyBook> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => MyBookDetailPage(
-                                            book: book,
+                                            bookId: book.id,
                                           ),
                                         ),
                                       );
@@ -222,9 +222,9 @@ class _MyBookState extends State<MyBook> {
                                             initialData: {
                                               'title': book.title,
                                               'author': book.author,
-                                              'category': book.category,
+                                              'categories': book.categories,
                                               'description': book.description,
-                                              'image': book.image,
+                                              'imageUrl': book.image,
                                             },
                                           ),
                                         ),

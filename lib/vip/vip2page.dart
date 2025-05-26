@@ -23,11 +23,11 @@ class _Vip2PageState extends State<Vip2Page> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       userDocRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-      checkTodayVip1Attendance();
+      checkTodayVip2Attendance();
     }
   }
 
-  Future<void> checkTodayVip1Attendance() async {
+  Future<void> checkTodayVip2Attendance() async {
     final snapshot = await userDocRef.get();
     final data = snapshot.data() as Map<String, dynamic>?;
 
@@ -54,7 +54,7 @@ class _Vip2PageState extends State<Vip2Page> {
     );
   }
 
-  Stream<QuerySnapshot> getVip1Books() {
+  Stream<QuerySnapshot> getVip2Books() {
     return FirebaseFirestore.instance
         .collection('books')
         .where('tags', arrayContains: 'VIP2')
@@ -63,6 +63,9 @@ class _Vip2PageState extends State<Vip2Page> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(title: const Text("VIP 2")),
       body: Center(
@@ -70,10 +73,10 @@ class _Vip2PageState extends State<Vip2Page> {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? Colors.grey[900] : Colors.white70,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -84,7 +87,6 @@ class _Vip2PageState extends State<Vip2Page> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Dòng điểm danh
               Row(
                 children: [
                   Icon(
@@ -97,10 +99,9 @@ class _Vip2PageState extends State<Vip2Page> {
                       hasCheckedIn
                           ? "Đã điểm danh hôm nay"
                           : "Chưa điểm danh hôm nay",
-                      style: const TextStyle(fontSize: 18),
+                      style: theme.textTheme.bodyLarge
                     ),
                   ),
-                  // Chỉ hiện nút bấm khi chưa điểm danh
                   if (!hasCheckedIn)
                     ElevatedButton(
                       onPressed: handleCheckIn,
@@ -111,19 +112,17 @@ class _Vip2PageState extends State<Vip2Page> {
                       ),
                       child: const Icon(Icons.add, size: 24),
                     ),
-                  // Nếu đã điểm danh thì không hiện icon check phía cuối nữa
                 ],
               ),
               const SizedBox(height: 25),
-              // Dòng cho phép đọc sách VIP2, luôn tick xanh
               Row(
-                children: const [
-                  Icon(Icons.check_circle, color: Colors.green),
-                  SizedBox(width: 8),
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       "Được phép đọc sách có tag VIP2",
-                      style: TextStyle(fontSize: 18, color: Colors.black87),
+                      style: theme.textTheme.bodyLarge
                     ),
                   ),
                 ],
@@ -131,13 +130,14 @@ class _Vip2PageState extends State<Vip2Page> {
               const SizedBox(height: 25),
               Row(
                 children: [
-                  Icon(Icons.check_circle, color: Colors.green),
-                  SizedBox(width: 8),
-                  const Text(
-                    "Kênh tin tức độc quyền",
-                    style: TextStyle(fontSize: 18, color: Colors.black87),
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Kênh tin tức độc quyền",
+                      style: theme.textTheme.bodyLarge
+                    ),
                   ),
-                  Spacer(),
                   IconButton(
                     onPressed: () {
                       Navigator.push(

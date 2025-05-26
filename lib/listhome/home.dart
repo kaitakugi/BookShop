@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:study_app/listhome/attendance_page.dart';
 import 'package:study_app/listhome/buybook_page.dart';
 import 'package:study_app/models/usermodel.dart';
@@ -8,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:study_app/vip/vippage.dart';
+
+import '../darkmode.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -19,6 +22,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int currentPageIndex = 0;
+
+  bool isDarkMode = false; // trạng thái bật tắt
 
   //cập nhật 2 thông số để xác định sách đã mở và tổng số sách trong book vipvip
   int unlockedCount = 0;
@@ -105,359 +110,269 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
 
-    return Stack(
-      children: [
-        // Background image
-        SizedBox(
-          width: width,
-          height: height,
-          child: Image.asset(
-            "assets/images/parrot.avif",
-            fit: BoxFit.cover,
-          ),
-        ),
-        // App bar (top)
-        Positioned(
-          top: 25,
-          left: 0,
-          width: width,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Left part
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.chat_bubble,
-                          color: Colors.green[700], size: 30),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Level 2",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          Container(
-                            width: 60,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFFE45B00),
-                                  Color(0xFFD98B56),
-                                  Color(0xFFDDDDDD),
-                                  Color(0xFFDDDDDD),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
+    return Scaffold(
 
-                // Right part
-                Row(
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const AttendancePage()),
-                        ).then((_) =>
-                            fetchUserData()); // reload lại coin sau khi điểm danh
-                      },
-                      icon: const Icon(Icons.add_circle, color: Colors.amber),
-                      label: Text('${user?.coins ?? 0}'),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const VipPage()),
-                        );
-                      },
-                      icon: const Icon(Icons.diamond, color: Colors.green),
-                      label: const Text("VIP"),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ),
-
-        // Welcome Text
-        Positioned(
-          top: 160,
-          width: width,
-          child: Center(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 24, color: Colors.black),
+      //chế độ sáng tối
+      backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // App Bar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const TextSpan(text: 'Welcome back '),
-                  TextSpan(
-                    text: user?.username ?? 'Tên người dùng',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  Text(
+                    "Xin chào,",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AttendancePage()),
+                          ).then((_) => fetchUserData());
+                        },
+                        icon: Icon(Icons.add_circle, color: isDarkMode ? Colors.white70 : Colors.amber),
+                        label: Text('${user?.coins ?? 0}', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black,),),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const VipPage()),
+                          );
+                        },
+                        icon: Icon(Icons.diamond, color: isDarkMode ? Colors.white70 : Colors.green[700]),
+                        label: Text("VIP", style: TextStyle(color: isDarkMode ? Colors.white : Colors.black,),),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
 
-        // Stats Card
-        Positioned(
-          top: 260,
-          left: 20,
-          right: 20,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  // ignore: deprecated_member_use
-                  color: Colors.black.withOpacity(0.05),
-                  spreadRadius: 2,
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+              const SizedBox(height: 8),
+              Text(
+                user?.username ?? 'Người dùng',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top section
-                Row(
+              ),
+
+              const SizedBox(height: 20),
+
+              // Level Progress
+              _buildCard(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.asset(
-                            'assets/images/lich.avif',
-                            width: 42,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                        Icon(Icons.color_lens, color: isDarkMode ? Colors.white70 : Colors.green[700], size: 30),
                         const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '$unlockedCount of $totalCount',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const Text('Bookshop Coins'),
-                          ],
+                        Text(
+                          "Chế độ hiển thị",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                         )
+
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.more_horiz, size: 24),
+                    ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BuyBookPage(
-                              currentUser: user,
-                            ),
-                          ),
-                        ).then((_) =>
-                            fetchUserData()); // để cập nhật xu nếu người dùng mua sách
+                        setState(() {
+                          Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                        });
                       },
+                      icon: Icon(isDarkMode ? Icons.wb_sunny : Icons.nightlight_round),
+                      label: Text(isDarkMode ? 'Sáng' : 'Tối'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDarkMode ? Colors.amber : Colors.blueGrey,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const Divider(height: 20, thickness: 2, color: Colors.black),
+              ),
 
-                // Bottom section
-                const Text('So for today',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Row(
+
+              const SizedBox(height: 16),
+
+              // Book Stats
+              _buildCard(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: Image.asset(
-                              'assets/images/nha.avif',
-                              width: 42,
-                              height: 40,
-                              fit: BoxFit.cover,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.book_outlined, color: isDarkMode ? Colors.white70 : Colors.green[700], size: 30),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('$unlockedCount of $totalCount',
+                                    style: TextStyle(fontWeight: FontWeight.bold,
+                                      color: isDarkMode ? Colors.white : Colors.black,)),
+                                Text('Books unlocked',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('14',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text('Books read'),
-                            ],
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.more_horiz, color: isDarkMode ? Colors.white : Colors.black,),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BuyBookPage(currentUser: user),
+                              ),
+                            ).then((_) => fetchUserData());
+                          },
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: Image.asset(
-                              'assets/images/clock.avif',
-                              width: 42,
-                              height: 40,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('40 min',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text('Learning time'),
-                            ],
-                          ),
-                        ],
-                      ),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStat(icon: Icons.menu_book, label: 'Books Read', value: '14'),
+                        _buildStat(icon: Icons.timer, label: 'Reading', value: '40 min'),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
 
-        // Book Category Title
-        // Thay thế phần Book Category Title và thêm ScrollView
-        Positioned(
-          top: 500,
-          width: width,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(16),
-              height: 300, // hoặc dùng MediaQuery nếu muốn responsive
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Thông tin ứng dụng',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildInfoItem(
-                            icon: Icons.info,
-                            title: 'Về chúng tôi',
-                            content:
-                                'Ứng dụng đọc sách giúp bạn đọc hàng ngàn đầu sách mọi lúc, mọi nơi.',
-                          ),
-                          _buildInfoItem(
-                            icon: Icons.contact_mail,
-                            title: 'Liên hệ',
-                            content:
-                                'Email: contact@appdocsach.com\nHotline: 0123 456 789',
-                          ),
-                          _buildInfoItem(
-                            icon: Icons.feedback,
-                            title: 'Phản hồi',
-                            content:
-                                'Gửi phản hồi để chúng tôi cải thiện chất lượng dịch vụ.',
-                          ),
-                          _buildInfoItem(
-                            icon: Icons.star,
-                            title: 'Đánh giá',
-                            content:
-                                'Đánh giá 5 sao để ủng hộ đội ngũ phát triển ứng dụng.',
-                          ),
-                        ],
-                      ),
+              const SizedBox(height: 16),
+
+              // Info Section
+              _buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Thông tin ứng dụng',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDarkMode ? Colors.white : Colors.black,),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    _buildInfoItem(
+                      icon: Icons.info,
+                      title: 'Về chúng tôi',
+                      content: 'Ứng dụng đọc sách mọi lúc, mọi nơi.',
+                    ),
+                    _buildInfoItem(
+                      icon: Icons.contact_mail,
+                      title: 'Liên hệ',
+                      content: 'Email: contact@appdocsach.com\nHotline: 0123 456 789',
+                    ),
+                    _buildInfoItem(
+                      icon: Icons.feedback,
+                      title: 'Phản hồi',
+                      content: 'Gửi phản hồi để chúng tôi cải thiện dịch vụ.',
+                    ),
+                    _buildInfoItem(
+                      icon: Icons.star,
+                      title: 'Đánh giá',
+                      content: 'Đánh giá 5 sao để ủng hộ ứng dụng.',
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCard({required Widget child}) {
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode ? Colors.black45 : Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildStat({required IconData icon, required String label, required String value}) {
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+    return Column(
+      children: [
+        Icon(icon, size: 30,
+            color: isDarkMode ? Colors.white70 : Colors.green[700]),
+        const SizedBox(height: 6),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold,
+          color: isDarkMode ? Colors.white : Colors.black,)),
+        Text(label, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black,),),
       ],
     );
   }
 
-  Widget _buildInfoItem({
-    required IconData icon,
-    required String title,
-    required String content,
-  }) {
+  Widget _buildInfoItem({required IconData icon, required String title, required String content}) {
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 28, color: Colors.blueAccent),
+          Icon(icon, color: isDarkMode ? Colors.white70 : Colors.green[700], size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,)),
                 const SizedBox(height: 4),
-                Text(
-                  content,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
-                ),
+                Text(content, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),),
               ],
             ),
           ),

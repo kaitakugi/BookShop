@@ -128,13 +128,13 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 if (!isLogin)
                   TextField(
                     controller: _usernameController,
                     style: const TextStyle(color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                      fontSize: 16,
                     ),
                     decoration: inputDecoration('Tên người dùng', Icons.person),
                   ),
@@ -143,7 +143,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                   controller: _emailController,
                   style: const TextStyle(color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                   decoration: inputDecoration('Email', Icons.email),
                 ),
@@ -153,11 +153,11 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                   obscureText: true,
                   style: const TextStyle(color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                   decoration: inputDecoration('Mật khẩu', Icons.lock),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
                     setState(() => isLogin = !isLogin);
@@ -166,9 +166,10 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                     isLogin
                         ? 'Bạn chưa có tài khoản? Đăng ký'
                         : 'Bạn đã có tài khoản? Đăng nhập',
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
+                const SizedBox(height: 10)
               ],
             ),
           ),
@@ -176,7 +177,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
 
         // Nút nổi bên dưới card
         Positioned(
-          bottom: 16,
+          bottom: 20,
           child: ElevatedButton(
             onPressed: isLogin ? loginUser : registerUser,
             style: ElevatedButton.styleFrom(

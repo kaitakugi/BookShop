@@ -69,6 +69,7 @@ class AdminForumPage extends StatelessWidget {
                 name: data['name'] ?? '',
                 profilePic: data['profilePic'] ?? '',
                 status: data['status'] ?? '',
+                timestamp: data['timestamp'],
                 comments: [], // không dùng nữa
                 likedUsers: data['likes'] is List
                     ? List<String>.from(data['likes'])

@@ -7,7 +7,9 @@ import 'package:study_app/mybook/mybook.dart';
 import 'package:study_app/search/search.dart';
 import 'package:study_app/profile/profile.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'darkmode.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,22 +17,27 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   MobileAds.instance.initialize();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyAppWrapper(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyAppWrapper extends StatelessWidget {
+  const MyAppWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
+
     return MaterialApp(
-      title: 'Study App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-        useMaterial3: true,
-      ),
-      home: const LoginRegisterPage(),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: const LoginRegisterPage(),
     );
   }
 }
