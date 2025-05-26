@@ -69,8 +69,9 @@ class _ForumState extends State<Forum> {
     }
   }
 
-  String formatTimestamp(Timestamp? timestamp) {
-    if (timestamp == null) return '';
+  String formatTimestamp(dynamic timestamp) {
+    if (timestamp == null || timestamp is! Timestamp)
+      return '...'; // Hoặc 'Chưa xác định'
     final date = timestamp.toDate();
     return DateFormat('dd/MM/yyyy HH:mm').format(date);
   }
@@ -103,95 +104,100 @@ class _ForumState extends State<Forum> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Material(
-              elevation: 3,
-              color: isDark ? Colors.grey[900] : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.white70, width: 2), // Thêm viền ở đây
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _postController,
-                      style: TextStyle(color: textColor),
-                      decoration: InputDecoration(
-                        hintText: 'Chia sẻ điều gì đó...',
-                        hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
-                        border: InputBorder.none,
-                      ),
-                      maxLines: null,
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Material(
+                    elevation: 3,
+                    color: isDark ? Colors.grey[900] : Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                          color: Colors.white70, width: 2), // Thêm viền ở đây
                     ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton.icon(
-                        onPressed: _addPost,
-                        icon: Icon(Icons.send, color: Colors.white),
-                        label: const Text('Đăng'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: postButtonColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: _postController,
+                            style: TextStyle(color: textColor),
+                            decoration: InputDecoration(
+                              hintText: 'Chia sẻ điều gì đó...',
+                              hintStyle: TextStyle(
+                                  color: isDark ? Colors.white54 : Colors.grey),
+                              border: InputBorder.none,
+                            ),
+                            maxLines: null,
                           ),
-                        ),
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton.icon(
+                              onPressed: _addPost,
+                              icon: Icon(Icons.send, color: Colors.white),
+                              label: const Text('Đăng'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: postButtonColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('forum')
+                          .orderBy('timestamp', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
+                        final docs = snapshot.data?.docs ?? [];
+
+                        final posts = docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return Post(
+                            id: doc.id,
+                            userId: data['userId'] ?? '',
+                            name: data['name'] ?? '',
+                            profilePic: data['profilePic'] ?? '',
+                            status: data['status'] ?? '',
+                            timestamp: data['timestamp'],
+                            comments: data['comments'] is List
+                                ? List<String>.from(data['comments'])
+                                : [],
+                            likedUsers: data['likes'] is List
+                                ? List<String>.from(data['likes'])
+                                : [],
+                          );
+                        }).toList();
+
+                        return ListView.builder(
+                          itemCount: posts.length,
+                          itemBuilder: (context, index) {
+                            return PostCard(post: posts[index]);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('forum')
-                    .orderBy('timestamp', descending: true)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final docs = snapshot.data?.docs ?? [];
-
-                  final posts = docs.map((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    return Post(
-                      id: doc.id,
-                      userId: data['userId'] ?? '',
-                      name: data['name'] ?? '',
-                      profilePic: data['profilePic'] ?? '',
-                      status: data['status'] ?? '',
-                      timestamp: data['timestamp'],
-                      comments: data['comments'] is List
-                          ? List<String>.from(data['comments'])
-                          : [],
-                      likedUsers: data['likes'] is List
-                          ? List<String>.from(data['likes'])
-                          : [],
-                    );
-                  }).toList();
-
-                  return ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      return PostCard(post: posts[index]);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -383,11 +389,12 @@ class _PostCardState extends State<PostCard> {
                             context: context,
                             builder: (_) => AlertDialog(
                               title: const Text('Xác nhận'),
-                              content:
-                              const Text('Bạn có chắc muốn xóa bài viết này không?'),
+                              content: const Text(
+                                  'Bạn có chắc muốn xóa bài viết này không?'),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: const Text('Hủy'),
                                 ),
                                 TextButton(
@@ -419,5 +426,4 @@ class _PostCardState extends State<PostCard> {
       ),
     );
   }
-
 }
