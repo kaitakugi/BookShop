@@ -39,9 +39,15 @@ class _BookManagePageState extends State<BookManagePage> {
   bool _isLoading = false;
   final BookService bookService = BookService();
 
-// Hàm chọn ảnh
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('Category items initialized: ${_categoryItems.map((e) => e.value).toList()}');
+    debugPrint('Initial selected categories: $_selectedCategories');
+  }
+
+  // Hàm chọn ảnh
   Future<void> pickImage() async {
-    // Kiểm tra quyền trên Android
     if (Platform.isAndroid) {
       final status = await Permission.photos.request();
       if (status.isDenied) {
@@ -54,7 +60,7 @@ class _BookManagePageState extends State<BookManagePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Quyền bị từ chối vĩnh viễn, vui lòng cấp quyền trong cài đặt')),
         );
-        await openAppSettings(); // Mở cài đặt ứng dụng
+        await openAppSettings();
         return;
       }
     }
@@ -81,7 +87,7 @@ class _BookManagePageState extends State<BookManagePage> {
     }
   }
 
-// Hàm upload ảnh lên Cloudinary
+  // Hàm upload ảnh lên Cloudinary
   Future<String?> _uploadImage(File imageFile) async {
     try {
       final cloudName = 'drsawzehp';
@@ -191,8 +197,10 @@ class _BookManagePageState extends State<BookManagePage> {
     authorController.text = book.author;
     descriptionController.text = book.description;
     priceController.text = book.price.toString();
+    // Use a local list to manage dialog state
+    List<String> dialogSelectedCategories = List<String>.from(book.categories);
+
     setState(() {
-      _selectedCategories = List<String>.from(book.categories);
       _imageUrl = book.image;
       _selectedImage = null;
       isLocked = book.lock;
@@ -213,8 +221,7 @@ class _BookManagePageState extends State<BookManagePage> {
                     labelText: 'Tiêu đề',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  validator: (value) =>
-                  value!.isEmpty ? 'Vui lòng nhập tiêu đề' : null,
+                  validator: (value) => value!.isEmpty ? 'Vui lòng nhập tiêu đề' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -223,25 +230,78 @@ class _BookManagePageState extends State<BookManagePage> {
                     labelText: 'Tác giả',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  validator: (value) =>
-                  value!.isEmpty ? 'Vui lòng nhập tác giả' : null,
+                  validator: (value) => value!.isEmpty ? 'Vui lòng nhập tác giả' : null,
                 ),
                 const SizedBox(height: 12),
-                MultiSelectDialogField(
-                  items: _categoryItems,
-                  initialValue: _selectedCategories,
-                  title: const Text('Danh mục'),
-                  buttonText: const Text('Chọn danh mục'),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    chipTheme: ChipThemeData(
+                      backgroundColor: getChipBackgroundColor(context),
+                      selectedColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[700]! : Colors.grey[300]!,
+                      labelStyle: TextStyle(
+                        color: getChipTextColor(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      secondaryLabelStyle: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.purple[300]!,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      checkmarkColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.purple[300]!,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[500]! : Colors.grey[400]!,
+                        ),
+                      ),
+                    ),
                   ),
-                  onConfirm: (values) {
-                    setDialogState(() {
-                      _selectedCategories = List<String>.from(values);
-                    });
-                    setState(() {});
-                  },
+                  child: MultiSelectDialogField(
+                    items: _categoryItems,
+                    initialValue: dialogSelectedCategories,
+                    title: Text(
+                      'Danh mục',
+                      style: TextStyle(color: getInputTextColor(context)),
+                    ),
+                    buttonText: Text(
+                      'Chọn danh mục',
+                      style: TextStyle(color: getInputTextColor(context)),
+                    ),
+                    searchable: true,
+                    listType: MultiSelectListType.CHIP,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                      color: getInputBackgroundColor(context),
+                    ),
+                    itemsTextStyle: TextStyle(color: getInputTextColor(context)),
+                    chipDisplay: MultiSelectChipDisplay(
+                      chipColor: getChipBackgroundColor(context),
+                      textStyle: TextStyle(
+                        color: getChipTextColor(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    confirmText: Text(
+                      "OK",
+                      style: TextStyle(color: getInputTextColor(context)),
+                    ),
+                    cancelText: Text(
+                      "Hủy",
+                      style: TextStyle(color: getInputTextColor(context)),
+                    ),
+                    onConfirm: (values) {
+                      debugPrint('Confirmed categories in dialog: $values');
+                      setDialogState(() {
+                        dialogSelectedCategories = List<String>.from(values);
+                      });
+                      setState(() {
+                        _selectedCategories = List<String>.from(values);
+                      });
+                    },
+                    onSelectionChanged: (values) {
+                      debugPrint('Selection changed in dialog: $values');
+                    },
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -321,8 +381,7 @@ class _BookManagePageState extends State<BookManagePage> {
                       labelText: 'Giá (số xu)',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    validator: (value) =>
-                    value!.isEmpty ? 'Vui lòng nhập giá' : null,
+                    validator: (value) => value!.isEmpty ? 'Vui lòng nhập giá' : null,
                   ),
               ],
             ),
@@ -355,17 +414,33 @@ class _BookManagePageState extends State<BookManagePage> {
     super.dispose();
   }
 
+  Color getInputBackgroundColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[100]!;
+  }
+
+  Color getInputTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+  }
+
+  Color getChipTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.black;
+  }
+
+  Color getChipBackgroundColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? Colors.grey[600]! : Colors.grey[300]!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Cho phép cuộn khi bàn phím xuất hiện
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Admin - Quản lý sách'),
         backgroundColor: Colors.redAccent,
         elevation: 4,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04), // Responsive padding
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -390,7 +465,7 @@ class _BookManagePageState extends State<BookManagePage> {
                           labelText: 'Tiêu đề',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           filled: true,
-                          fillColor: Colors.grey[100],
+                          fillColor: getInputBackgroundColor(context),
                         ),
                         validator: (value) => value!.isEmpty ? 'Vui lòng nhập tiêu đề' : null,
                       ),
@@ -401,28 +476,77 @@ class _BookManagePageState extends State<BookManagePage> {
                           labelText: 'Tác giả',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           filled: true,
-                          fillColor: Colors.grey[100],
+                          fillColor: getInputBackgroundColor(context),
                         ),
                         validator: (value) => value!.isEmpty ? 'Vui lòng nhập tác giả' : null,
                       ),
                       const SizedBox(height: 12),
-                      MultiSelectDialogField(
-                        items: _categoryItems,
-                        initialValue: _selectedCategories,
-                        title: const Text('Danh mục'),
-                        buttonText: const Text('Chọn danh mục'),
-                        searchable: true,
-                        listType: MultiSelectListType.CHIP,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.grey[100],
+                      Theme(
+                        data: Theme.of(context).copyWith(
+                          chipTheme: ChipThemeData(
+                            backgroundColor: getChipBackgroundColor(context), // Nền chip khi không chọn
+                            selectedColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[700]! : Colors.grey[300]!, // Nền chip khi chọn
+                            labelStyle: TextStyle(
+                              color: getChipTextColor(context), // Chữ chip khi không chọn
+                              fontWeight: FontWeight.w500,
+                            ),
+                            secondaryLabelStyle: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.purple[300]!, // Chữ chip khi chọn
+                              fontWeight: FontWeight.w500,
+                            ),
+                            checkmarkColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.purple[300]!, // Dấu tích
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[500]! : Colors.grey[400]!,
+                              ),
+                            ),
+                          ),
                         ),
-                        onConfirm: (values) {
-                          setState(() {
-                            _selectedCategories = List<String>.from(values);
-                          });
-                        },
+                        child: MultiSelectDialogField(
+                          items: _categoryItems,
+                          initialValue: _selectedCategories,
+                          title: Text(
+                            'Danh mục',
+                            style: TextStyle(color: getInputTextColor(context)),
+                          ),
+                          buttonText: Text(
+                            'Chọn danh mục',
+                            style: TextStyle(color: getInputTextColor(context)),
+                          ),
+                          searchable: true,
+                          listType: MultiSelectListType.CHIP,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                            color: getInputBackgroundColor(context),
+                          ),
+                          itemsTextStyle: TextStyle(color: getInputTextColor(context)),
+                          chipDisplay: MultiSelectChipDisplay(
+                            chipColor: getChipBackgroundColor(context),
+                            textStyle: TextStyle(
+                              color: getChipTextColor(context),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          confirmText: Text(
+                            "OK",
+                            style: TextStyle(color: getInputTextColor(context)),
+                          ),
+                          cancelText: Text(
+                            "Hủy",
+                            style: TextStyle(color: getInputTextColor(context)),
+                          ),
+                          onConfirm: (values) {
+                            debugPrint('Confirmed categories: $values');
+                            setState(() {
+                              _selectedCategories = List<String>.from(values);
+                            });
+                          },
+                          onSelectionChanged: (values) {
+                            debugPrint('Selection changed: $values');
+                          },
+                        ),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -431,7 +555,7 @@ class _BookManagePageState extends State<BookManagePage> {
                           labelText: 'Mô tả',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           filled: true,
-                          fillColor: Colors.grey[100],
+                          fillColor: getInputBackgroundColor(context),
                         ),
                         maxLines: 3,
                       ),
@@ -443,7 +567,7 @@ class _BookManagePageState extends State<BookManagePage> {
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(8),
-                          color: Colors.grey[200],
+                          color: getInputBackgroundColor(context),
                         ),
                         child: _selectedImage != null
                             ? Image.file(_selectedImage!, fit: BoxFit.contain)
@@ -506,7 +630,7 @@ class _BookManagePageState extends State<BookManagePage> {
                             labelText: 'Giá (số xu)',
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                             filled: true,
-                            fillColor: Colors.grey[100],
+                            fillColor: getInputBackgroundColor(context),
                           ),
                           validator: (value) => value!.isEmpty ? 'Vui lòng nhập giá' : null,
                         ),

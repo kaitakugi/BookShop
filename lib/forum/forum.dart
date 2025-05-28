@@ -70,8 +70,9 @@ class _ForumState extends State<Forum> {
   }
 
   String formatTimestamp(dynamic timestamp) {
-    if (timestamp == null || timestamp is! Timestamp)
+    if (timestamp == null || timestamp is! Timestamp) {
       return '...'; // Hoặc 'Chưa xác định'
+    }
     final date = timestamp.toDate();
     return DateFormat('dd/MM/yyyy HH:mm').format(date);
   }

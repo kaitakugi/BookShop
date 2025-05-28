@@ -17,7 +17,6 @@ class BuyBookPage extends StatelessWidget {
 
   Future<Map<String, dynamic>> _fetchData() async {
     final books = await bookService.getLockedBooks().first;
-
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return {'books': books, 'unlockedBookIds': <String>{}};
@@ -30,14 +29,19 @@ class BuyBookPage extends StatelessWidget {
         .get();
 
     final unlockedBookIds = unlockedSnap.docs.map((doc) => doc.id).toSet();
-
     return {'books': books, 'unlockedBookIds': unlockedBookIds};
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Buy Books")),
+      appBar: AppBar(
+        title: const Text("Buy Books"),
+        backgroundColor: isDarkMode ? Colors.black : null,
+      ),
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: SafeArea(
         child: FutureBuilder<Map<String, dynamic>>(
           future: _fetchData(),
@@ -50,7 +54,7 @@ class BuyBookPage extends StatelessWidget {
 
             final books = snapshot.data!['books'] as List<Book>;
             final unlockedBookIds =
-                snapshot.data!['unlockedBookIds'] as Set<String>;
+            snapshot.data!['unlockedBookIds'] as Set<String>;
 
             if (books.isEmpty) {
               return const Center(child: Text('No books found.'));
@@ -79,10 +83,9 @@ class BuyBookPage extends StatelessWidget {
                         .collection('users')
                         .doc(userId);
                     final unlockedRef =
-                        userDoc.collection('unlockedBooks').doc(book.id);
+                    userDoc.collection('unlockedBooks').doc(book.id);
 
                     if (isUnlocked) {
-                      // Đã mở khóa
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -94,7 +97,6 @@ class BuyBookPage extends StatelessWidget {
                       );
                     } else {
                       if (book.price == 0) {
-                        // Mở khóa miễn phí
                         await unlockedRef.set({
                           'unlockedAt': FieldValue.serverTimestamp(),
                         });
@@ -108,13 +110,25 @@ class BuyBookPage extends StatelessWidget {
                           ),
                         );
                       } else {
-                        // Yêu cầu mở khóa bằng xu
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text("Mở khóa sách"),
+                            backgroundColor: isDarkMode
+                                ? Colors.grey[900]
+                                : Colors.white,
+                            title: Text(
+                              "Mở khóa sách",
+                              style: TextStyle(
+                                color:
+                                isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
                             content: Text(
                               "Bạn cần ${book.price} xu để mở khóa sách này.",
+                              style: TextStyle(
+                                color:
+                                isDarkMode ? Colors.white70 : Colors.black,
+                              ),
                             ),
                             actions: [
                               TextButton(
@@ -130,22 +144,18 @@ class BuyBookPage extends StatelessWidget {
                                   if (currentCoins >= book.price) {
                                     await userDoc.update({
                                       'coins': FieldValue.increment(
-                                        -book.price,
-                                      ),
+                                          -book.price),
                                     });
                                     await unlockedRef.set({
                                       'unlockedAt':
-                                          FieldValue.serverTimestamp(),
+                                      FieldValue.serverTimestamp(),
                                     });
 
                                     Navigator.pop(context);
-                                    ScaffoldMessenger.of(
-                                      context,
-                                    ).showSnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text(
-                                          "Mở khóa thành công!",
-                                        ),
+                                        content:
+                                        Text("Mở khóa thành công!"),
                                       ),
                                     );
                                     Navigator.push(
@@ -159,13 +169,10 @@ class BuyBookPage extends StatelessWidget {
                                     );
                                   } else {
                                     Navigator.pop(context);
-                                    ScaffoldMessenger.of(
-                                      context,
-                                    ).showSnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                          "Bạn không đủ xu để mở khóa.",
-                                        ),
+                                            "Bạn không đủ xu để mở khóa."),
                                       ),
                                     );
                                   }
@@ -180,39 +187,35 @@ class BuyBookPage extends StatelessWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: isDarkMode
+                          ? Colors.grey[900]
+                          : Colors.white.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12),
-                              ),
-                              child: Image.network(
-                                book.image,
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          child: Image.network(
+                            book.image,
+                            height: 150,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Container(
                                 height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (
-                                  context,
-                                  child,
-                                  loadingProgress,
-                                ) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    height: 150,
-                                    color: Colors.grey[200],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
+                                color: Colors.grey[200],
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
                                   height: 150,
                                   color: Colors.grey[300],
                                   child: const Icon(
@@ -220,9 +223,7 @@ class BuyBookPage extends StatelessWidget {
                                     color: Colors.red,
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -231,15 +232,20 @@ class BuyBookPage extends StatelessWidget {
                             children: [
                               Text(
                                 book.title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
+                                  color: isDarkMode
+                                      ? Colors.white
+                                      : Colors.black,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 book.categories.join(', '),
-                                style: const TextStyle(
-                                  color: Colors.grey,
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? Colors.white70
+                                      : Colors.grey,
                                   fontSize: 12,
                                 ),
                               ),
@@ -255,19 +261,24 @@ class BuyBookPage extends StatelessWidget {
                                 Column(
                                   children: [
                                     Icon(
-                                      isUnlocked ? Icons.lock_open : Icons.lock,
-                                      color: Colors.black87,
+                                      isUnlocked
+                                          ? Icons.lock_open
+                                          : Icons.lock,
+                                      color: isDarkMode
+                                          ? Colors.white70
+                                          : Colors.black87,
                                       size: 20,
                                     ),
                                     const SizedBox(height: 4),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: Colors.black54,
-                                        borderRadius: BorderRadius.circular(8),
+                                        color: isDarkMode
+                                            ? Colors.white10
+                                            : Colors.black54,
+                                        borderRadius:
+                                        BorderRadius.circular(8),
                                       ),
                                       child: Text(
                                         '${book.price} xu',

@@ -92,7 +92,6 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
       borderRadius: BorderRadius.circular(12),
       color: isDark ? Colors.grey[850] : const Color(0xFFFFF9C4), // nền
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
@@ -157,7 +156,7 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
         child: ListView(
           children: [
             const Text('Chọn gói muốn mua:', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             buildPackageCard(
               title: 'Gói tuần (7 ngày)',
               price: '29.000₫',
@@ -170,6 +169,7 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
               isPurchased: isWeekPurchased,
               context: context,
             ),
+            SizedBox(height: 20),
             buildPackageCard(
               title: 'Gói tháng (30 ngày)',
               price: '99.000₫',
