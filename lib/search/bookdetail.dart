@@ -28,8 +28,8 @@ class _BookDetailPageState extends State<BookDetailPage> {
   bool _isBannerAdReady = false;
   bool _adInitialized = false;
 
-  RewardedAd? _rewardedAd;
-  bool _isRewardedAdReady = false;
+  InterstitialAd? _interstitialAd;
+
   bool _isAdWatched = false; // Quảng cáo đã xem xong chưa
 
   final TextEditingController _commentbookController = TextEditingController();
@@ -89,18 +89,22 @@ class _BookDetailPageState extends State<BookDetailPage> {
   }
 
   void _initializeAds() {
-    _adInitialized = true;
+    _adInitialized = true; //tránh khởi tạo quảng cáo nhiều lần
 
     _bannerAd = BannerAd(
       adUnitId: 'ca-app-pub-3940256099942544/6300978111', // test banner ad
       size: AdSize.banner,
-      request: const AdRequest(),
+      request: const AdRequest(), //bắt buộc quảng cáo
+      //listen dùng xử lí quảng cáo đã load hoăc bị lỗi
       listener: BannerAdListener(
+        //hiển thị banner lên UI sau khi load xong
         onAdLoaded: (_) {
           setState(() {
             _isBannerAdReady = true;
           });
         },
+
+        //trường hợp lỗi sẽ loại bỏ banner để in log debug
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
           debugPrint('Banner Ad failed to load');
@@ -113,50 +117,56 @@ class _BookDetailPageState extends State<BookDetailPage> {
   }
 
   void _loadAndShowRewardedAd() {
-    RewardedAd.load(
-      adUnitId: 'ca-app-pub-3940256099942544/5224354917', // test rewarded ad
+    //load ad full screen
+    InterstitialAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712', // Test Interstitial
       request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          _rewardedAd = ad;
-          _isRewardedAdReady = true;
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          //ads load xong sẽ gán vào
+          _interstitialAd = ad;
 
-          _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+          _interstitialAd!.fullScreenContentCallback =
+              FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
+              //ads kết thúc
               ad.dispose();
               setState(() {
-                _isAdWatched = true; // Quảng cáo đã xem xong
+                _isAdWatched = true;
+                // 👉 Dọn banner nếu đang true
+                if (_isBannerAdReady) {
+                  _bannerAd.dispose();
+                  _isBannerAdReady = false;
+                }
               });
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
               ad.dispose();
-              debugPrint('Rewarded Ad failed to show: $error');
+              debugPrint('Interstitial Ad failed to show: $error');
               setState(() {
-                _isAdWatched = true; // lỗi thì cũng cho xem luôn
+                _isAdWatched = true;
+
+                if (_isBannerAdReady) {
+                  _bannerAd.dispose();
+                  _isBannerAdReady = false;
+                }
               });
             },
           );
-
-          _rewardedAd!.show(
-            onUserEarnedReward: (ad, reward) {
-              debugPrint('User earned reward: ${reward.amount} ${reward.type}');
-            },
-          );
+          //quảng cáo hiển thị
+          _interstitialAd!.show();
         },
-        onAdFailedToLoad: (error) {
-          debugPrint('Rewarded Ad failed to load: $error');
-          setState(() {
-            _isAdWatched = true; // nếu load lỗi cho xem luôn
-          });
+        onAdFailedToLoad: (LoadAdError error) {
+          debugPrint('Interstitial failed to load: $error');
         },
       ),
     );
   }
 
+  //Hàm tắt, giải phóng bộ nhớ chứ không để ads được lưu trữ trong RAM
   @override
   void dispose() {
     _bannerAd.dispose();
-    _rewardedAd?.dispose();
     super.dispose();
   }
 
@@ -257,7 +267,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
               ),
               const SizedBox(height: 16),
               if (!isCurrentlyPremium) buildAdCard(currentUser, isDark),
-
               const Text(
                 'Chapters',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -295,6 +304,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                       .orderBy('timestamp', descending: true)
                       .snapshots(),
                   builder: (context, snapshot) {
+                    //hiển thị xoay vòng nếu firestore chưa load dữ liệu
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -348,6 +358,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
       },
     );
   }
+
   Widget buildAdCard(UserModel currentUser, bool isDark) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 16),

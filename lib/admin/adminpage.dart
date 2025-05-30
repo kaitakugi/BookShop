@@ -6,6 +6,7 @@ import 'package:study_app/admin/usermanage.dart';
 import 'package:study_app/admin/forumanage.dart';
 import 'package:study_app/admin/approvedmoney.dart';
 import 'package:study_app/admin/pendingbook.dart';
+import 'package:study_app/admin/withdrawmanage.dart';
 import 'package:study_app/login_register_page.dart';
 import 'package:study_app/admin/admincreatepostpage.dart';
 
@@ -52,6 +53,12 @@ class _AdminPageState extends State<AdminPage> {
       'title': 'Đăng tin tức',
       'color': Colors.yellowAccent.shade700,
       'page': const AdminCreatePostPage(),
+      'icon': Icons.post_add,
+    },
+    {
+      'title': 'Quản lí rút tiền',
+      'color': Colors.yellowAccent.shade700,
+      'page': const WithdrawAdminPage(),
       'icon': Icons.post_add,
     },
   ];

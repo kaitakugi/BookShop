@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:study_app/chargemoney/withdram.dart';
 import 'package:study_app/models/usermodel.dart';
 import 'package:study_app/wallet/buypackage.dart';
+import '../chargemoney/history.dart';
 import 'topup_form.dart';
 import 'package:intl/intl.dart';
 
@@ -26,6 +28,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _loadUserInfo() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
+    //dùng uid để truy cấn document trong collection
     final snapshot =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
@@ -34,6 +37,7 @@ class _WalletScreenState extends State<WalletScreen> {
       setState(() {
         _money = data['money'] ?? 0;
         _username = data['username'] ?? '';
+        //Tạo đối tượng currentUser từ snapshot
         currentUser = UserModel.fromFirestore(snapshot);
       });
     }
@@ -149,7 +153,131 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                 ),
               ),
-            )
+            ),
+            const SizedBox(height: 20),
+
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              splashColor: Colors.orangeAccent.withOpacity(0.3),
+              highlightColor: Colors.transparent,
+              onTap: () {
+                if (currentUser != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WithdrawPage(
+                          userId: FirebaseAuth.instance.currentUser!.uid),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text('Vui lòng chờ tải thông tin người dùng...')),
+                  );
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFFF8008), // cam đậm
+                      Color(0xFFFFC837), // vàng cam
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                  border: Border.all(
+                      color: Colors.white.withOpacity(0.25), width: 1.5),
+                ),
+                child: const Center(
+                  child: Text(
+                    '💸 Rút tiền',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.1,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black38,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              splashColor: Colors.blueGrey.withOpacity(0.3),
+              highlightColor: Colors.transparent,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WithdrawHistoryPage(
+                      userId: FirebaseAuth.instance.currentUser!.uid,
+                    ),
+                  ),
+                );
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF232526), // xám đậm
+                      Color(0xFF414345), // xám nhạt
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                ),
+                child: const Center(
+                  child: Text(
+                    '📜 Lịch sử rút tiền',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.1,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black38,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

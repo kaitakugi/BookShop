@@ -34,49 +34,16 @@ class _SearchState extends State<Search> {
   Future<void> fetchUserData() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
-
-      if (currentUser == null) {
-        if (mounted) {
-          setState(() {
-            user = null;
-            isLoading = false;
-          });
-        }
-        return;
-      }
-
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUser.uid)
+          .doc(currentUser?.uid)
           .get();
-
-      // Lấy danh sách ID sách đã mở khóa
-      final unlockedSnap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .collection('unlockedBooks')
-          .get();
-
-      // Lấy tất cả sách cần xu để mở
-      final lockedBooksSnap = await FirebaseFirestore.instance
-          .collection('books')
-          .where('lock', isEqualTo: true)
-          .where('price', isGreaterThan: 0)
-          .get();
-
-      // Lọc sách đã mở khóa trong danh sách cần xu
-      final unlockedBookIds = unlockedSnap.docs.map((doc) => doc.id).toSet();
-      final unlockedLockedBooks = lockedBooksSnap.docs
-          .where((doc) => unlockedBookIds.contains(doc.id))
-          .toList();
 
       if (mounted) {
         setState(() {
           user = userDoc.exists
               ? UserModel.fromMap(userDoc.data() as Map<String, dynamic>)
               : null;
-          unlockedCount = unlockedLockedBooks.length;
-          totalCount = lockedBooksSnap.size;
           isLoading = false;
         });
       }
@@ -167,7 +134,8 @@ class _SearchState extends State<Search> {
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -176,11 +144,13 @@ class _SearchState extends State<Search> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const AttendancePage()),
+                          MaterialPageRoute(
+                              builder: (_) => const AttendancePage()),
                         ).then((_) => fetchUserData());
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
+                        backgroundColor:
+                            isDarkMode ? Colors.grey[850] : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                           side: BorderSide(color: borderColor),
@@ -188,12 +158,16 @@ class _SearchState extends State<Search> {
                       ),
                       icon: Icon(
                         Icons.add_circle,
-                        color: isDarkMode ? Colors.white : Colors.amber, // Màu icon thay đổi theo chế độ
+                        color: isDarkMode
+                            ? Colors.white
+                            : Colors.amber, // Màu icon thay đổi theo chế độ
                       ),
                       label: Text(
                         '${user?.coins ?? 0}',
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black, // Màu chữ thay đổi theo chế độ
+                          color: isDarkMode
+                              ? Colors.white
+                              : Colors.black, // Màu chữ thay đổi theo chế độ
                         ),
                       ),
                     ),
@@ -206,19 +180,25 @@ class _SearchState extends State<Search> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
+                        backgroundColor:
+                            isDarkMode ? Colors.grey[850] : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                           side: BorderSide(color: borderColor),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                       ),
                       icon: Icon(Icons.diamond,
                           color: isDarkMode ? Colors.white : Colors.green),
-                      label: Text("VIP",
+                      label: Text(
+                        "VIP",
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black, // Màu chữ thay đổi theo chế độ
-                        ),),
+                          color: isDarkMode
+                              ? Colors.white
+                              : Colors.black, // Màu chữ thay đổi theo chế độ
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -255,7 +235,8 @@ class _SearchState extends State<Search> {
                       labelText: 'Search by title or more...',
                       prefixIcon: const Icon(Icons.search),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                     ),
                     style: TextStyle(color: textColor),
                     onChanged: (value) {
@@ -276,87 +257,55 @@ class _SearchState extends State<Search> {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   children: [
+                    categoryItem('Adventure', 'assets/images/adventure.jpg',
+                        () {
+                      setState(() {
+                        selectedCategory = 'Adventure';
+                      });
+                    }, context),
+                    categoryItem('Comedy', 'assets/images/comedy.avif', () {
+                      setState(() {
+                        selectedCategory = 'Comedy';
+                      });
+                    }, context),
+                    categoryItem('Fantasy', 'assets/images/fantasy.avif', () {
+                      setState(() {
+                        selectedCategory = 'Fantasy';
+                      });
+                    }, context),
+                    categoryItem('Horror', 'assets/images/horror.avif', () {
+                      setState(() {
+                        selectedCategory = 'Horror';
+                      });
+                    }, context),
+                    categoryItem('Drama', 'assets/images/drama.avif', () {
+                      setState(() {
+                        selectedCategory = 'Drama';
+                      });
+                    }, context),
+                    categoryItem('Fiction', 'assets/images/fiction.avif', () {
+                      setState(() {
+                        selectedCategory = 'Fiction';
+                      });
+                    }, context),
+                    categoryItem('Liternature', 'assets/images/liternator.jpg',
+                        () {
+                      setState(() {
+                        selectedCategory = 'Liternator';
+                      });
+                    }, context),
+                    categoryItem('Manga', 'assets/images/manga.avif', () {
+                      setState(() {
+                        selectedCategory = 'Manga';
+                      });
+                    }, context),
                     categoryItem(
-                      'Adventure',
-                      'assets/images/adventure.jpg',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Adventure';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Comedy',
-                      'assets/images/comedy.avif',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Comedy';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Fantasy',
-                      'assets/images/fantasy.avif',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Fantasy';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Horror',
-                      'assets/images/horror.avif',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Horror';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Drama',
-                      'assets/images/drama.avif',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Drama';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Fiction',
-                      'assets/images/fiction.avif',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Fiction';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Liternature',
-                      'assets/images/liternator.jpg',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Liternator';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'Manga',
-                      'assets/images/manga.avif',
-                          () {
-                        setState(() {
-                          selectedCategory = 'Manga';
-                        });
-                      }, context
-                    ),
-                    categoryItem(
-                      'All',
-                      'assets/images/books.png', // icon tùy bạn chọn
-                          () {
-                        setState(() {
-                          selectedCategory = 'All';
-                        });
-                      }, context
-                    ),
+                        'All', 'assets/images/books.png', // icon tùy bạn chọn
+                        () {
+                      setState(() {
+                        selectedCategory = 'All';
+                      });
+                    }, context),
                   ],
                 ),
               ),
@@ -374,16 +323,21 @@ class _SearchState extends State<Search> {
                       return const Center(child: Text('No books found.'));
                     }
 
+                    //snap.data lấy dữ liệu từ streambuilder realtime
                     final filtered = snapshot.data!.where((book) {
-                      final matchCategory = selectedCategory == 'All' || book.categories.contains(selectedCategory);
-                      final matchTitle = book.title.toLowerCase().contains(searchTerm.toLowerCase());
+                      final matchCategory = selectedCategory == 'All' ||
+                          book.categories.contains(selectedCategory);
+                      final matchTitle = book.title
+                          .toLowerCase()
+                          .contains(searchTerm.toLowerCase());
                       return matchCategory && matchTitle;
                     }).toList();
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: filtered.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         childAspectRatio: 0.65,
                         crossAxisSpacing: 16,
@@ -397,7 +351,8 @@ class _SearchState extends State<Search> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => BookDetailPage(book: book, currentUser: user!),
+                                builder: (_) => BookDetailPage(
+                                    book: book, currentUser: user!),
                               ),
                             );
                           },
@@ -414,23 +369,32 @@ class _SearchState extends State<Search> {
                                 Stack(
                                   children: [
                                     ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                      borderRadius: const BorderRadius.vertical(
+                                          top: Radius.circular(12)),
                                       child: Image.network(
                                         book.image,
                                         height: 150,
                                         fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
                                           return Container(
                                             height: 150,
                                             color: Colors.grey[300],
-                                            child: const Center(child: CircularProgressIndicator()),
+                                            child: const Center(
+                                                child:
+                                                    CircularProgressIndicator()),
                                           );
                                         },
-                                        errorBuilder: (context, error, stackTrace) => Container(
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
                                           height: 150,
                                           color: Colors.grey[300],
-                                          child: const Icon(Icons.error, color: Colors.red),
+                                          child: const Icon(Icons.error,
+                                              color: Colors.red),
                                         ),
                                       ),
                                     ),
@@ -450,8 +414,12 @@ class _SearchState extends State<Search> {
                                           });
                                         },
                                         child: Icon(
-                                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                                          color: isFavorite ? Colors.red : Colors.grey,
+                                          isFavorite
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: isFavorite
+                                              ? Colors.red
+                                              : Colors.grey,
                                         ),
                                       ),
                                     ),
@@ -461,7 +429,8 @@ class _SearchState extends State<Search> {
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         book.title,
@@ -473,7 +442,8 @@ class _SearchState extends State<Search> {
                                       const SizedBox(height: 4),
                                       Text(
                                         book.categories.join(', '),
-                                        style: TextStyle(fontSize: 12, color: subtitleColor),
+                                        style: TextStyle(
+                                            fontSize: 12, color: subtitleColor),
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
                                       ),
@@ -496,10 +466,9 @@ class _SearchState extends State<Search> {
     );
   }
 
-
-
   //Widget của loại sách
-  Widget categoryItem(String title, String imageUrl, VoidCallback onTap, BuildContext context) {
+  Widget categoryItem(
+      String title, String imageUrl, VoidCallback onTap, BuildContext context) {
     final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
 
     final backgroundColor = isDarkMode
@@ -509,12 +478,12 @@ class _SearchState extends State<Search> {
     final List<BoxShadow> boxShadow = isDarkMode
         ? [] // Không đổ bóng ở dark mode
         : [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.3), // bóng trắng đục nhẹ
-        blurRadius: 8,
-        offset: const Offset(0, 4),
-      ),
-    ];
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3), // bóng trắng đục nhẹ
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ];
 
     return GestureDetector(
       onTap: onTap,
@@ -531,7 +500,8 @@ class _SearchState extends State<Search> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(12)),
               child: Image.asset(
                 imageUrl,
                 width: 40,

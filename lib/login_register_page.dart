@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +14,8 @@ class LoginRegisterPage extends StatefulWidget {
 
 class _LoginRegisterPageState extends State<LoginRegisterPage> {
   bool isLogin = true;
+
+  //TextEditingController là biến để giữ giá trị của người dùng nhập vào
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
@@ -30,11 +31,13 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
         return;
       }
 
+      //Hàm để lưu 2 trường email và pass vào firebase auth dùng đăng nhập
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
       await FirebaseFirestore.instance
           .collection('users')
+          //userCredential biến dữ liệu kiểu class của firebase dùng để chưa thông tin đăng kí của người dùng
           .doc(userCredential.user!.uid)
           .set({
         'username': username,
@@ -44,7 +47,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
       });
 
       showSnackbar('Đăng ký thành công! Vui lòng đăng nhập.');
-      await FirebaseAuth.instance.signOut();
+      await FirebaseAuth.instance.signOut(); //Hàm đăng xuất khỏi firebase
       setState(() => isLogin = true);
     } on FirebaseAuthException catch (e) {
       showSnackbar(switchErrorMessage(e));
@@ -68,6 +71,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
 
       if (!userDoc.exists) throw Exception('Không tìm thấy người dùng');
 
+      //Lấy giá trị role từ dữ liệu người dùng, nếu không có thì mặc định là 'user'
       String role = userDoc['role'] ?? 'user';
 
       if (role == 'admin') {
@@ -112,11 +116,13 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
       children: [
         // Card nền
         Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           color: Colors.white.withOpacity(0.2),
           elevation: 10,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 80), // chừa chỗ cho nút
+            padding:
+                const EdgeInsets.fromLTRB(24, 24, 24, 80), // chừa chỗ cho nút
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -132,7 +138,8 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                 if (!isLogin)
                   TextField(
                     controller: _usernameController,
-                    style: const TextStyle(color: Colors.white,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -141,7 +148,8 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _emailController,
-                  style: const TextStyle(color: Colors.white,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -151,7 +159,8 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
-                  style: const TextStyle(color: Colors.white,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -213,8 +222,6 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
       border: const OutlineInputBorder(),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {

@@ -22,11 +22,15 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
     checkPremiumStatus();
   }
 
+  //dùng async để thực hiện thao tác kiểm tra
   Future<void> checkPremiumStatus() async {
+    //ngày hết hạn
     final expiry = widget.currentUser.premiumExpiry;
     final now = DateTime.now();
 
+    //expiry.isAfter(now) expiry lớn hơn now
     if (expiry != null && expiry.isAfter(now)) {
+      //Tính số ngày còn lại
       final duration = expiry.difference(now).inDays;
       setState(() {
         if (duration <= 7) {
@@ -145,7 +149,6 @@ class _BuyPackagePageState extends State<BuyPackagePage> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

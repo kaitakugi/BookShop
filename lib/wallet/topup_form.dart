@@ -15,7 +15,9 @@ class TopUpForm extends StatefulWidget {
 class _TopUpFormState extends State<TopUpForm> {
   final _amountController = TextEditingController();
 
+  //async dùng để xử lí thao tác nạp tiền
   void _submitTopUpRequest() async {
+    //int.tryparese chuyển đổi số nguyên
     final amount = int.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context)

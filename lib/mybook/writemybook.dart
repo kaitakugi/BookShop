@@ -46,15 +46,19 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
 
   Future<void> pickImage() async {
     if (Platform.isAndroid) {
+      //in ra phiên bản sdk
       int sdkInt = int.tryParse(Platform.version.split(' ').first) ?? 0;
 
+      //android 13
       if (sdkInt >= 33) {
+        //quyền truy cập vào file photo ảnh riêng
         var status = await Permission.photos.request();
         if (!status.isGranted) {
           print('Permission denied');
           return;
         }
       } else {
+        //quyền truy cập vào bộ nhớ
         var status = await Permission.storage.request();
         if (!status.isGranted) {
           print('Permission denied');
@@ -69,7 +73,7 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
       print('Chọn ảnh: ${image.path}');
       setState(() {
         _selectedImage = File(image.path); // 👉 Gán ảnh đã chọn vào biến
-        _imageUrl = null; // Nếu bạn muốn thay thế ảnh cũ (nếu đang sửa sách)
+        _imageUrl = null; //Xóa ảnh cũ để trống chỗ cho ảnh mới
       });
     } else {
       print('Không chọn ảnh');
@@ -86,15 +90,19 @@ class _UserWriteBookPageState extends State<WriteMyBookPage> {
 
       final filename = imageFile.path.split('/').last;
 
+      // tạo request phương thức post
       final request = http.MultipartRequest('POST', uri)
-        ..fields['upload_preset'] = uploadPreset
+        ..fields['upload_preset'] = uploadPreset //không cần xác thựcthực
         ..fields['public_id'] = filename // 🟢 Đảm bảo Cloudinary dùng tên file
+        //đọc imagefile từ ổ đĩa rồi chuyển thành dạng uri để gửi đi
         ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
 
+      //Gửi yêu cầi lên cloudinary
       final response = await request.send();
       final res = await http.Response.fromStream(response);
 
       if (res.statusCode == 200) {
+        //giải mãi JSON và lấy secure_url
         final data = json.decode(res.body);
         return data['secure_url']; // ✅ Link ảnh sau khi upload thành công
       } else {
